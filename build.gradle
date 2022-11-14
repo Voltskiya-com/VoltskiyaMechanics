@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    maven { url "https://reposilite.appleptr16.com/appleptr16" }
+    maven { url 'https://papermc.io/repo/repository/maven-public/' }
+    maven { url 'https://repo.aikar.co/content/groups/aikar/' }
+    mavenCentral()
+    mavenLocal()
+    maven {
+        name 'CodeMC'
+        url 'https://repo.codemc.org/repository/maven-public/'
+    }
+}
+
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+project.group groupValue
+project.version versionValue
+
+configurations {
+    all {
+        resolutionStrategy.cacheDynamicVersionsFor 1, 'seconds'
+        resolutionStrategy.cacheChangingModulesFor 1, 'seconds'
+    }
+}
+
+dependencies {
+    compileOnly 'mc.pmc:VoltPluginManager:3.1-SNAPSHOT'
+    compileOnly 'voltskiya.utilities:VoltskiyaUtilities:2.0-SNAPSHOT'
+
+    compileOnly 'io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT'
+}
+
+jar {
+
+}
