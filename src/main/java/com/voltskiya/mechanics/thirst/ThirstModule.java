@@ -3,7 +3,7 @@ package com.voltskiya.mechanics.thirst;
 import com.voltskiya.lib.AbstractModule;
 import com.voltskiya.lib.acf.BaseCommand;
 import com.voltskiya.lib.acf.BukkitCommandManager;
-import com.voltskiya.mechanics.ItemManager;
+import com.voltskiya.mechanics.Item;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -47,7 +47,7 @@ public class ThirstModule extends AbstractModule {
 
 
     private void registerRecipes() {
-        ShapedRecipe canteen = new ShapedRecipe(new NamespacedKey(ThirstModule.get().getPlugin(), "canteen"), ItemManager.CANTEEN.getCopy());
+        ShapedRecipe canteen = new ShapedRecipe(new NamespacedKey(ThirstModule.get().getPlugin(), "canteen"), Item.CANTEEN.getCopy());
         canteen.shape(
                 "L  ",
                 "LIL",
@@ -56,11 +56,11 @@ public class ThirstModule extends AbstractModule {
         canteen.setIngredient('I', Material.IRON_INGOT);
         Bukkit.addRecipe(canteen);
 
-        ShapelessRecipe simpleBottle = new ShapelessRecipe(new NamespacedKey(ThirstModule.get().getPlugin(), "simple_bottle"), ItemManager.SIMPLE_BOTTLE.getCopy());
+        ShapelessRecipe simpleBottle = new ShapelessRecipe(new NamespacedKey(ThirstModule.get().getPlugin(), "simple_bottle"), Item.SIMPLE_BOTTLE.getCopy());
         simpleBottle.addIngredient(Material.LEATHER);
         Bukkit.addRecipe(simpleBottle);
 
-        ShapedRecipe filteredCanteen = new ShapedRecipe(new NamespacedKey(ThirstModule.get().getPlugin(), "filtered_canteen"), ItemManager.FILTERED_CANTEEN.getCopy());
+        ShapedRecipe filteredCanteen = new ShapedRecipe(new NamespacedKey(ThirstModule.get().getPlugin(), "filtered_canteen"), Item.FILTERED_CANTEEN.getCopy());
         filteredCanteen.shape(
                 "ISI",
                 "LSL",
