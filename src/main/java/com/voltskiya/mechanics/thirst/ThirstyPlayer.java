@@ -1,14 +1,17 @@
 package com.voltskiya.mechanics.thirst;
 
-import com.voltskiya.mechanics.VoltskiyaPlugin;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.minecraft.network.protocol.game.ClientboundSetHealthPacket;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.io.File;
 import java.io.FileReader;
@@ -40,24 +43,28 @@ public class ThirstyPlayer {
             return;
         if (thirst > MIN_THIRST)
             thirst--;
-        String s = "|||||" + thirst + "|||||";
-        int thirstLength = (int) (((double) MAX_THIRST) / s.length() * thirst);
+        if (thirst < 200)
+            player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 20, 0, false, true, true));
+        if (thirst < 100)
+            player.setSprinting(false);
+        if (thirst == 0)
+            player.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 20, 0, false, true, true));
+
+        String s = "|||||" + String.format("%02d", thirst / 10) + "|||||";
+        int thirstLength = (int) Math.round(((double) MAX_THIRST) / s.length() * thirst);
         player.sendActionBar(Component.text("[", TextColor.color(0x9c9c9c))
                 .append(Component.text(s.substring(0, thirstLength), TextColor.color(0x2a90de)))
                 .append(Component.text(s.substring(thirstLength), TextColor.color(0x7a7a7a)))
                 .append(Component.text("]", TextColor.color(0x9c9c9c))));
     }
 
-    /*private void updateDisplay() {
-        if (player.getGameMode() != GameMode.SURVIVAL)
+    public void onSprint() {
+        if (thirst >= 100)
             return;
-        if (thirst > MIN_THIRST)
-            thirst--;
-        AttributeInstance attributeInstance = new AttributeInstance(Attributes.ARMOR, ignored -> {});
-        attributeInstance.setBaseValue(thirst*20d/MAX_THIRST);
-        ServerPlayer serverPlayer = ((CraftPlayer) player).getHandle();
-        serverPlayer.connection.send(new ClientboundUpdateAttributesPacket(serverPlayer.getId(), List.of(attributeInstance)));
-    }*/
+        var connection = ((CraftPlayer)player).getHandle().connection;
+        connection.send(new ClientboundSetHealthPacket((float) player.getHealth(), 6, player.getSaturation()));
+        connection.send(new ClientboundSetHealthPacket((float) player.getHealth(), player.getFoodLevel(), player.getSaturation()));
+    }
 
     public void resetThirst() {
         thirst = MAX_THIRST;
@@ -77,7 +84,7 @@ public class ThirstyPlayer {
 
     @SneakyThrows
     private void savePlayer() {
-        File saveFile = new File(VoltskiyaPlugin.get().getDataFolder(), "players/" + player.getUniqueId() + ".player");
+        File saveFile = ThirstModule.get().getFile("players", player.getUniqueId() + ".player");
         if (!saveFile.exists()) {
             //noinspection ResultOfMethodCallIgnored
             saveFile.mkdirs();
@@ -98,7 +105,7 @@ public class ThirstyPlayer {
 
     @SneakyThrows
     private static void loadPlayer(Player player) {
-        File saveFile = new File(VoltskiyaPlugin.get().getDataFolder(), "players/" + player.getUniqueId() + ".player");
+        File saveFile = ThirstModule.get().getFile("players", player.getUniqueId() + ".player");
         if (!saveFile.exists()) {
             players.put(player, new ThirstyPlayer(player, MAX_THIRST, true));
             return;
@@ -132,4 +139,6 @@ public class ThirstyPlayer {
     public static void reset(Player player) {
         Optional.ofNullable(players.get(player)).ifPresentOrElse(ThirstyPlayer::reset, () -> log.error("The unregistered player {} died!", player.getName()));
     }
+
+
 }

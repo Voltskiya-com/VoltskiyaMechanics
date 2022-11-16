@@ -6,6 +6,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 
 public class ThirstListener implements Listener {
 
@@ -27,5 +28,10 @@ public class ThirstListener implements Listener {
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
         ThirstyPlayer.reset(e.getPlayer());
+    }
+
+    @EventHandler
+    public void onSrint(PlayerToggleSprintEvent e) {
+        ThirstyPlayer.getPlayer(e.getPlayer()).onSprint();
     }
 }

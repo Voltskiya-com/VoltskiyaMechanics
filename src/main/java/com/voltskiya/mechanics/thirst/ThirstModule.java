@@ -3,7 +3,6 @@ package com.voltskiya.mechanics.thirst;
 import com.voltskiya.lib.AbstractModule;
 import com.voltskiya.lib.acf.BaseCommand;
 import com.voltskiya.lib.acf.BukkitCommandManager;
-import com.voltskiya.mechanics.VoltskiyaPlugin;
 import org.bukkit.Bukkit;
 
 public class ThirstModule extends AbstractModule {
@@ -14,14 +13,19 @@ public class ThirstModule extends AbstractModule {
         acf.registerCommand(command);
     }
 
+    public static ThirstModule instance;
+
+    public static ThirstModule get() {
+        return instance;
+    }
 
     @Override
     public void enable() {
-        VoltskiyaPlugin plugin = VoltskiyaPlugin.get();
+        instance = this;
         ThirstyPlayer.load();
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, ThirstyPlayer::updatePlayers, 0, 20);
-        Bukkit.getPluginManager().registerEvents(new ThirstListener(), plugin);
-        acf = new BukkitCommandManager(plugin);
+        Bukkit.getScheduler().runTaskTimerAsynchronously(getPlugin(), ThirstyPlayer::updatePlayers, 0, 20);
+        getPlugin().registerEvents(new ThirstListener());
+        acf = new BukkitCommandManager(getPlugin());
         new ThirstCommandACF();
     }
 
