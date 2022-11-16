@@ -12,7 +12,7 @@ public class ThirstListener implements Listener {
 
     @EventHandler
     public void onConsume(PlayerItemConsumeEvent e) {
-        ThirstyPlayer.consume(e.getPlayer(), e.getItem());
+        ThirstyPlayer.getPlayer(e.getPlayer()).consume(e.getItem());
     }
 
     @EventHandler
@@ -22,7 +22,7 @@ public class ThirstListener implements Listener {
 
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
-        ThirstyPlayer.leave(e.getPlayer());
+        ThirstyPlayer.getPlayer(e.getPlayer()).leave();
     }
 
     @EventHandler

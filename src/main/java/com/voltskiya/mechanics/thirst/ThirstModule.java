@@ -4,6 +4,7 @@ import com.voltskiya.lib.AbstractModule;
 import com.voltskiya.lib.acf.BaseCommand;
 import com.voltskiya.lib.acf.BukkitCommandManager;
 import com.voltskiya.mechanics.Item;
+import com.voltskiya.mechanics.thirst.config.ThirstConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -27,6 +28,7 @@ public class ThirstModule extends AbstractModule {
     @Override
     public void enable() {
         instance = this;
+        ThirstConfig.load();
         ThirstyPlayer.load();
         Bukkit.getScheduler().runTaskTimerAsynchronously(getPlugin(), ThirstyPlayer::updatePlayers, 0, 20);
         getPlugin().registerEvents(new ThirstListener());
