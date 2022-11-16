@@ -64,7 +64,6 @@ public class ThirstConfig {
     }
 
     public List<PotionEffect> getPotionEffects(int thirstLevel) {
-        System.out.println(thirstLevel);
         return this.effects.stream().filter(effect -> effect.shouldActivate(thirstLevel))
             .map(ThirstEffect::potion).toList();
     }
