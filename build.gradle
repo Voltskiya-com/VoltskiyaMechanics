@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 repositories {
@@ -11,6 +12,10 @@ repositories {
     maven {
         name 'CodeMC'
         url 'https://repo.codemc.org/repository/maven-public/'
+    }
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
     }
 }
 
@@ -36,8 +41,14 @@ dependencies {
     compileOnly 'voltskiya.utilities:VoltskiyaUtilities:2.0-SNAPSHOT'
 
     compileOnly 'io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT'
+
+    implementation 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    compileOnly 'org.spigotmc:spigot:1.19.2-R0.1-SNAPSHOT:remapped-mojang'
 }
 
 jar {
 
 }
+
