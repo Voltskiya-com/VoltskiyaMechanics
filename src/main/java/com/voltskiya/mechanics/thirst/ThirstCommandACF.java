@@ -35,7 +35,7 @@ public class ThirstCommandACF extends BaseCommand {
         if (amount == null)
             ThirstyPlayer.getPlayer(player).resetThirst();
         else
-            ThirstyPlayer.getPlayer(player).consume(amount);
+            ThirstyPlayer.getPlayer(player).drink(amount, false);
 
         sendSuccess(sender, playerName == null ? "Reset your thirst"
             : String.format("Reset %s's thirst", playerName));

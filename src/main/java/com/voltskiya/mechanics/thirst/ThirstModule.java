@@ -25,10 +25,16 @@ public class ThirstModule extends AbstractModule {
         return instance;
     }
 
+    public ThirstModule(){
+        instance = this;
+    }
+    @Override
+    public void init() {
+        ThirstConfig.load();
+    }
+
     @Override
     public void enable() {
-        instance = this;
-        ThirstConfig.load();
         ThirstyPlayer.load();
         Bukkit.getScheduler().runTaskTimerAsynchronously(getPlugin(), ThirstyPlayer::updatePlayers, 0, 20);
         getPlugin().registerEvents(new ThirstListener());
@@ -49,24 +55,29 @@ public class ThirstModule extends AbstractModule {
 
 
     private void registerRecipes() {
-        ShapedRecipe canteen = new ShapedRecipe(new NamespacedKey(ThirstModule.get().getPlugin(), "canteen"), Item.CANTEEN.getCopy());
+        ShapedRecipe canteen = new ShapedRecipe(
+            new NamespacedKey(ThirstModule.get().getPlugin(), "canteen"), Item.CANTEEN.getCopy());
         canteen.shape(
-                "L  ",
-                "LIL",
-                " L ");
+            "L  ",
+            "LIL",
+            " L ");
         canteen.setIngredient('L', Material.LEATHER);
         canteen.setIngredient('I', Material.IRON_INGOT);
         Bukkit.addRecipe(canteen);
 
-        ShapelessRecipe simpleBottle = new ShapelessRecipe(new NamespacedKey(ThirstModule.get().getPlugin(), "simple_bottle"), Item.SIMPLE_BOTTLE.getCopy());
+        ShapelessRecipe simpleBottle = new ShapelessRecipe(
+            new NamespacedKey(ThirstModule.get().getPlugin(), "simple_bottle"),
+            Item.SIMPLE_BOTTLE.getCopy());
         simpleBottle.addIngredient(Material.LEATHER);
         Bukkit.addRecipe(simpleBottle);
 
-        ShapedRecipe filteredCanteen = new ShapedRecipe(new NamespacedKey(ThirstModule.get().getPlugin(), "filtered_canteen"), Item.FILTERED_CANTEEN.getCopy());
+        ShapedRecipe filteredCanteen = new ShapedRecipe(
+            new NamespacedKey(ThirstModule.get().getPlugin(), "filtered_canteen"),
+            Item.FILTERED_CANTEEN.getCopy());
         filteredCanteen.shape(
-                "ISI",
-                "LSL",
-                "LLL");
+            "ISI",
+            "LSL",
+            "LLL");
         filteredCanteen.setIngredient('I', Material.IRON_INGOT);
         filteredCanteen.setIngredient('L', Material.LEATHER);
         filteredCanteen.setIngredient('S', Material.STRING);

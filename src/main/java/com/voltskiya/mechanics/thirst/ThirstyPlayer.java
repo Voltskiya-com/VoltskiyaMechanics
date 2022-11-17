@@ -8,7 +8,6 @@ import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Cleanup;
@@ -16,16 +15,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.network.protocol.game.ClientboundSetHealthPacket;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 
@@ -51,7 +46,7 @@ public class ThirstyPlayer {
     }
 
     private void update() {
-        if (player.getGameMode() != GameMode.SURVIVAL)
+        if (player.getGameMode() != GameMode.SURVIVAL || !isThirsty)
             return;
         if (thirst > MIN_THIRST)
             this.thirst -= ThirstConfig.get().getThirstRate();
@@ -63,20 +58,18 @@ public class ThirstyPlayer {
     }
 
     private void updateDisplay() {
-        String s = "|||||" + String.format("%02d", thirst / 10) + "|||||";
-        int thirstLength = (int) Math.round(((double) s.length() / MAX_THIRST * thirst));
-        player.sendActionBar(Component.text("[", TextColor.color(0x9c9c9c))
-            .append(Component.text(s.substring(0, thirstLength), TextColor.color(0x2a90de)))
-            .append(Component.text(s.substring(thirstLength), TextColor.color(0x7a7a7a)))
-            .append(Component.text("]", TextColor.color(0x9c9c9c))));
+        PlayerHud.updateDisplay(player, thirst / (double) MAX_THIRST, .67);
     }
 
     public void onSprint() {
         if (thirst >= 100)
             return;
         var connection = ((CraftPlayer) player).getHandle().connection;
-        connection.send(new ClientboundSetHealthPacket((float) player.getHealth(), 6, player.getSaturation()));
-        connection.send(new ClientboundSetHealthPacket((float) player.getHealth(), player.getFoodLevel(), player.getSaturation()));
+        connection.send(
+            new ClientboundSetHealthPacket((float) player.getHealth(), 6, player.getSaturation()));
+        connection.send(
+            new ClientboundSetHealthPacket((float) player.getHealth(), player.getFoodLevel(),
+                player.getSaturation()));
     }
 
     public void resetThirst() {
@@ -96,7 +89,7 @@ public class ThirstyPlayer {
         File saveFile = ThirstModule.get().getFile("players", player.getUniqueId() + ".player");
         if (!saveFile.exists()) {
             //noinspection ResultOfMethodCallIgnored
-            saveFile.mkdirs();
+            saveFile.getParentFile().mkdirs();
             if (!saveFile.createNewFile())
                 log.error("Unable to create save file for {} ({})", player.getName(), player.getUniqueId());
         }
@@ -150,15 +143,9 @@ public class ThirstyPlayer {
         }
     }
 
-    public void consume(ItemStack item) {
-        Integer overrideAmount = item.getItemMeta().getPersistentDataContainer()
-            .get(DRINK_AMOUNT_KEY, PersistentDataType.INTEGER);
-        int consumeAmount = Objects.requireNonNullElseGet(overrideAmount,
-            () -> ThirstConfig.get().getConsumeAmount(item.getType()));
-        consume(consumeAmount);
-    }
 
-    public void consume(int consumeAmount) {
+    public void drink(int consumeAmount, boolean isDirty) {
+        // todo deal with drinking dirty water
         this.thirst = Math.max(MIN_THIRST, Math.min(MAX_THIRST, this.thirst + consumeAmount));
     }
 

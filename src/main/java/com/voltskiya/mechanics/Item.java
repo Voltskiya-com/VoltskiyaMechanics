@@ -1,28 +1,31 @@
 package com.voltskiya.mechanics;
 
-import org.bukkit.Material;
+import com.voltskiya.mechanics.thirst.config.ThirstConfig;
+import com.voltskiya.mechanics.thirst.config.ThirstConsumableConfig;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public enum Item {
 
-    CANTEEN(Material.POTION, 0),
-    SIMPLE_BOTTLE(Material.POTION, 1),
-    FILTERED_CANTEEN(Material.POTION, 2);
+    CANTEEN("canteen"),
+    SIMPLE_BOTTLE("simple_bottle"),
+    FILTERED_CANTEEN("filtered_canteen");
+    @NotNull
+    private final ThirstConsumableConfig itemStack;
 
-    private final ItemStack itemStack;
+    private final String id;
 
-    Item(@NotNull Material material, @Nullable Integer modelData) {
-        ItemStack itemStack = new ItemStack(material);
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.setCustomModelData(modelData);
-        itemStack.setItemMeta(itemMeta);
-        this.itemStack = itemStack;
+    Item(String id) {
+        @Nullable ThirstConsumableConfig item;
+        this.id = id;
+        item = ThirstConfig.get().getConsumable(this.id);
+        if (item == null)
+            item = ThirstConfig.get().createConsumable(this.id);
+        itemStack = item;
     }
 
     public ItemStack getCopy() {
-        return itemStack.clone();
+        return itemStack.getItemEmpty();
     }
 }

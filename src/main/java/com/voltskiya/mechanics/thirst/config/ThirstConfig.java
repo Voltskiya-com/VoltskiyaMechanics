@@ -1,6 +1,7 @@
 package com.voltskiya.mechanics.thirst.config;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import com.voltskiya.mechanics.thirst.ThirstModule;
 import java.io.File;
@@ -12,21 +13,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.SneakyThrows;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.Nullable;
 
 public class ThirstConfig {
 
     private final List<ThirstEffect> effects = new ArrayList<>();
-    private final Map<Material, Integer> consumables = new HashMap<>();
+    private final Map<String, ThirstConsumableConfig> consumables = new HashMap<>();
+    private final Map<Material, ThirstConsumableConfig> defaultConsumables = new HashMap<>();
 
-    private int thirstRate = 1;
+    private final int thirstRate = 1;
     private static ThirstConfig instance;
-
-    public ThirstConfig() {
-        instance = this;
-    }
 
     public static ThirstConfig get() {
         return instance;
@@ -35,14 +38,17 @@ public class ThirstConfig {
     @SneakyThrows
     public static void load() {
         try (FileReader reader = new FileReader(getFile())) {
-            instance = new Gson().fromJson(reader, ThirstConfig.class);
+            instance = gson().fromJson(reader, ThirstConfig.class);
         } catch (IOException e) {
             instance = new ThirstConfig();
-            instance.consumables.put(Material.POTION, 300);
             instance.effects.add(new ThirstEffect(PotionEffectType.HUNGER, 0, 0, 200));
-            instance.effects.add(new ThirstEffect(PotionEffectType.WITHER, 0, 0, 100));
+            instance.effects.add(new ThirstEffect(PotionEffectType.WITHER, 0, 0, 0));
         }
         save(); // save no matter what in case we make changes
+    }
+
+    private static Gson gson() {
+        return GsonComponentSerializer.gson().populator().apply(new GsonBuilder()).create();
     }
 
     private static File getFile() {
@@ -52,15 +58,10 @@ public class ThirstConfig {
     private static void save() {
         File file = getFile();
         try (FileWriter writer = new FileWriter(file)) {
-            new Gson().toJson(instance, writer);
+            gson().toJson(instance, ThirstConfig.class, writer);
         } catch (IOException e) {
             VoltskiyaPlugin.get().getSLF4JLogger().error("Unable to write to " + file.getPath(), e);
         }
-    }
-
-
-    public int getConsumeAmount(Material material) {
-        return consumables.getOrDefault(material, 0);
     }
 
     public List<PotionEffect> getPotionEffects(int thirstLevel) {
@@ -70,5 +71,28 @@ public class ThirstConfig {
 
     public int getThirstRate() {
         return thirstRate;
+    }
+
+    @Nullable
+    public ThirstConsumableConfig getConsumable(String id) {
+        return this.consumables.get(id);
+    }
+
+    @Nullable
+    public ThirstConsumableConfig getConsumable(ItemStack item) {
+        PersistentDataContainer dataContainer = item.getItemMeta().getPersistentDataContainer();
+        @Nullable String id = dataContainer.get(ThirstConsumableConfig.THIRST_CONSUMALBE_KEY,
+            PersistentDataType.STRING);
+        ThirstConsumableConfig consumable = this.consumables.get(id);
+        if (consumable != null)
+            return consumable;
+        return this.defaultConsumables.get(item.getType());
+    }
+
+    public ThirstConsumableConfig createConsumable(String id) {
+        ThirstConsumableConfig created = new ThirstConsumableConfig();
+        this.consumables.put(id, created);
+        save();
+        return created;
     }
 }

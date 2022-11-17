@@ -9,7 +9,8 @@ import org.jetbrains.annotations.NotNull;
 public class ThirstEffect {
 
     private static final int DEFAULT_DURATION = 40;
-    private NamespacedKey potion = PotionEffectType.HERO_OF_THE_VILLAGE.getKey(); // just a random key so the user knows they messed up
+    private String potion = PotionEffectType.HERO_OF_THE_VILLAGE.getKey()
+        .asString(); // just a random key so the user knows they messed up
     private int amplifier;
     private int thirstLowerBound;
     private int thirstUpperBound;
@@ -19,7 +20,7 @@ public class ThirstEffect {
 
     public ThirstEffect(PotionEffectType potion, int amplifier, int thirstLowerBound,
         int thirstUpperBound) {
-        this.potion = potion.getKey();
+        this.potion = potion.getKey().asString();
         this.amplifier = amplifier;
         this.thirstLowerBound = thirstLowerBound;
         this.thirstUpperBound = thirstUpperBound;
@@ -27,11 +28,12 @@ public class ThirstEffect {
 
     @NotNull
     public PotionEffect potion() {
-        PotionEffectType effectType = PotionEffectType.getByKey(this.potion);
+        PotionEffectType effectType = PotionEffectType.getByKey(
+            NamespacedKey.fromString(this.potion));
         if (effectType == null) {
             VoltskiyaPlugin.get().getSLF4JLogger().error(
                 String.format("%s is not a valid PotionEffectType in ThirstConfig",
-                    this.potion.asString()));
+                    this.potion));
             // to fulfill @NotNull
             return PotionEffectType.HERO_OF_THE_VILLAGE.createEffect(0, 0);
         }
