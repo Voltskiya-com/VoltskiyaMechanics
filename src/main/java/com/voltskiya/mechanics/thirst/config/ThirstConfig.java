@@ -2,8 +2,18 @@ package com.voltskiya.mechanics.thirst.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.voltskiya.mechanics.Item;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import com.voltskiya.mechanics.thirst.ThirstModule;
+import lombok.SneakyThrows;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -12,21 +22,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.SneakyThrows;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.jetbrains.annotations.Nullable;
 
 public class ThirstConfig {
 
     private final List<ThirstEffect> effects = new ArrayList<>();
-    private final Map<String, ThirstConsumableConfig> consumables = new HashMap<>();
-    private final Map<Material, ThirstConsumableConfig> defaultConsumables = new HashMap<>();
+    private final Map<String, ConsumableItemConfig> consumables = new HashMap<>();
+    private final Map<Material, ConsumableItemConfig> defaultConsumables = new HashMap<>();
 
     private final int thirstRate = 1;
     private static ThirstConfig instance;
@@ -73,26 +74,25 @@ public class ThirstConfig {
         return thirstRate;
     }
 
-    @Nullable
-    public ThirstConsumableConfig getConsumable(String id) {
-        return this.consumables.get(id);
+    public static ConsumableItemConfig get(String id) {
+        return get().consumables.get(id);
     }
 
-    @Nullable
-    public ThirstConsumableConfig getConsumable(ItemStack item) {
-        PersistentDataContainer dataContainer = item.getItemMeta().getPersistentDataContainer();
-        @Nullable String id = dataContainer.get(ThirstConsumableConfig.THIRST_CONSUMALBE_KEY,
-            PersistentDataType.STRING);
-        ThirstConsumableConfig consumable = this.consumables.get(id);
-        if (consumable != null)
-            return consumable;
-        return this.defaultConsumables.get(item.getType());
-    }
+    public static class ConsumableItemConfig extends Item.ItemConfig {
+        public static final NamespacedKey USES_KEY = VoltskiyaPlugin.get().namespacedKey("thirst.consumable.used_count");
+        public static final NamespacedKey CONSUME_AMOUNT_KEY = VoltskiyaPlugin.get().namespacedKey("thirst.consumable.consume_amount");
+        private final int uses;
+        private final int consumeAmount;
 
-    public ThirstConsumableConfig createConsumable(String id) {
-        ThirstConsumableConfig created = new ThirstConsumableConfig();
-        this.consumables.put(id, created);
-        save();
-        return created;
+        public ConsumableItemConfig(int texture, Component name, List<Component> lore, int uses, int consumeAmount) {
+            super(texture, name, lore);
+            this.uses = uses;
+            this.consumeAmount = consumeAmount;
+        }
+
+        @Override
+        public Item.Tag[] getTags() {
+            return new Item.Tag[] {new Item.Tag(USES_KEY, uses), new Item.Tag(CONSUME_AMOUNT_KEY, consumeAmount)};
+        }
     }
 }

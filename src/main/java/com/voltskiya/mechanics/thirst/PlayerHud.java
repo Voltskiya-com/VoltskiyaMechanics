@@ -14,30 +14,28 @@ import org.jetbrains.annotations.NotNull;
 
 public class PlayerHud {
 
-    public static @NotNull BossBar bossBar = Bukkit.createBossBar("Air", BarColor.BLUE,
-        BarStyle.SOLID);
+    public static @NotNull BossBar bossBar = Bukkit.createBossBar("Air", BarColor.BLUE, BarStyle.SOLID);
 
     public static void watchAir(Player player) {
-        PlayerHud.bossBar.addPlayer(player);
+        bossBar.addPlayer(player);
         Bukkit.getScheduler().runTaskTimer(VoltskiyaPlugin.get(), () -> {
             double air = player.getRemainingAir() / (double) player.getMaximumAir();
             if (air != 1) {
-                PlayerHud.bossBar.addPlayer(player);
-                PlayerHud.bossBar.setProgress(Math.max(0, air));
+                bossBar.addPlayer(player);
+                bossBar.setProgress(Math.max(0, air));
             } else
-                PlayerHud.bossBar.removePlayer(player);
+                bossBar.removePlayer(player);
         }, 0, 1);
     }
 
-    public static void updateDisplay(Player player, double thirstPercentage,
-        double staminaPercentage) {
+    public static void updateDisplay(Player player, double thirstPercentage, double staminaPercentage) {
         AttributeInstance armorAttribute = player.getAttribute(Attribute.GENERIC_ARMOR);
         int armorValue = (int) (armorAttribute == null ? 0 : armorAttribute.getValue());
 
         StringBuilder armorStr = new StringBuilder();
-        for (char c : String.format("%02d", armorValue).toCharArray()) {
-            armorStr.append((char) (c + '\uF010' - '0'));
-        }
+        for (char c : String.format("%02d", armorValue).toCharArray())
+            armorStr.append((char) (c + '\uF010' - '0'));//shifted numbers
+
         Component thirst = new Bar("\uF003", "\uF004", "\uF005", thirstPercentage).display(false);
         Component stamina = new Bar("\uF006", "\uF007", "\uF008", staminaPercentage).display(true);
         TextComponent armor1 = Component.text(armorStr.substring(0, 1));
@@ -47,8 +45,10 @@ public class PlayerHud {
         Component armor = (armor1).append(backwardsSpace).append(armorIcon).append(backwardsSpace)
             .append(armor2);
         player.sendActionBar(
-            thirst.append(Component.space()).append(armor).append(Component.space())
-                .append(stamina));
+            thirst.append(Component.space())
+                    .append(armor)
+                    .append(Component.space())
+                    .append(stamina));
 
     }
 

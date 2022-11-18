@@ -1,7 +1,7 @@
 package com.voltskiya.mechanics.thirst;
 
 import com.voltskiya.mechanics.VoltskiyaPlugin;
-import com.voltskiya.mechanics.thirst.config.ThirstConfig;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import com.voltskiya.mechanics.thirst.config.ThirstConfig;
 import lombok.AllArgsConstructor;
 import lombok.Cleanup;
 import lombok.Getter;
@@ -30,8 +32,7 @@ import org.jetbrains.annotations.NotNull;
 @AllArgsConstructor
 public class ThirstyPlayer {
 
-    private static final NamespacedKey DRINK_AMOUNT_KEY = VoltskiyaPlugin.get()
-        .namespacedKey("thirst.drink_amount");
+    private static final NamespacedKey DRINK_AMOUNT_KEY = VoltskiyaPlugin.get().namespacedKey("thirst.drink_amount");
     private static final Map<Player, ThirstyPlayer> players = new HashMap<>();
     public static final int MAX_THIRST = 1000;
     public static final int MIN_THIRST = 0;
@@ -49,12 +50,11 @@ public class ThirstyPlayer {
         if (player.getGameMode() != GameMode.SURVIVAL || !isThirsty)
             return;
         if (thirst > MIN_THIRST)
-            this.thirst -= ThirstConfig.get().getThirstRate();
-        List<PotionEffect> effectsToAdd = ThirstConfig.get().getPotionEffects(this.thirst);
+            thirst = Math.max(MIN_THIRST, thirst - ThirstConfig.get().getThirstRate());
+        List<PotionEffect> effectsToAdd = ThirstConfig.get().getPotionEffects(thirst);
         if (!effectsToAdd.isEmpty())
-            VoltskiyaPlugin.get()
-                .scheduleSyncDelayedTask(() -> player.addPotionEffects(effectsToAdd));
-        this.updateDisplay();
+            VoltskiyaPlugin.get().scheduleSyncDelayedTask(() -> player.addPotionEffects(effectsToAdd));
+        updateDisplay();
     }
 
     private void updateDisplay() {
@@ -65,11 +65,10 @@ public class ThirstyPlayer {
         if (thirst >= 100)
             return;
         var connection = ((CraftPlayer) player).getHandle().connection;
-        connection.send(
-            new ClientboundSetHealthPacket((float) player.getHealth(), 6, player.getSaturation()));
-        connection.send(
-            new ClientboundSetHealthPacket((float) player.getHealth(), player.getFoodLevel(),
-                player.getSaturation()));
+        float saturation = player.getSaturation();
+        double health = player.getHealth();
+        connection.send(new ClientboundSetHealthPacket((float) health, 6, saturation));
+        connection.send(new ClientboundSetHealthPacket((float) health, player.getFoodLevel(), saturation));
     }
 
     public void resetThirst() {
@@ -112,52 +111,42 @@ public class ThirstyPlayer {
         fileReader.close();
     }
 
-    public static void load() {
-        synchronized (players) {
-            Bukkit.getOnlinePlayers().forEach(ThirstyPlayer::loadPlayer);
-        }
+    public static synchronized void load() {
+        Bukkit.getOnlinePlayers().forEach(ThirstyPlayer::loadPlayer);
     }
 
-    public static void updatePlayers() {
-        synchronized (players) {
+    public static synchronized void updatePlayers() {
             players.values().forEach(ThirstyPlayer::update);
-        }
     }
 
-    public static void save() {
-        synchronized (players) {
+    public static synchronized void save() {
             players.values().forEach(ThirstyPlayer::savePlayer);
-        }
     }
 
     @NotNull
-    public static ThirstyPlayer getPlayer(Player player) {
-        synchronized (players) {
-            return players.computeIfAbsent(player, ThirstyPlayer::new);
-        }
+    public static synchronized ThirstyPlayer getPlayer(Player player) {
+        return players.computeIfAbsent(player, ThirstyPlayer::new);
     }
 
-    public static void join(Player player) {
-        synchronized (players) {
-            loadPlayer(player);
-        }
+    public static synchronized void join(Player player) {
+        loadPlayer(player);
     }
 
 
     public void drink(int consumeAmount, boolean isDirty) {
         // todo deal with drinking dirty water
-        this.thirst = Math.max(MIN_THIRST, Math.min(MAX_THIRST, this.thirst + consumeAmount));
+        thirst = Math.max(MIN_THIRST, Math.min(MAX_THIRST, thirst + consumeAmount));
     }
 
-    public void leave() {
-        synchronized (players) {
-            Optional.ofNullable(players.remove(player)).ifPresentOrElse(ThirstyPlayer::savePlayer,
-                () -> log.error("The unregistered player {} left the server!", player.getName()));
-        }
+    public synchronized void leave() {
+        Optional.ofNullable(players.remove(player))
+                .ifPresentOrElse(ThirstyPlayer::savePlayer,
+                        () -> log.error("The unregistered player {} left the server!", player.getName()));
     }
 
-    public static void reset(Player player) {
-        Optional.ofNullable(players.get(player)).ifPresentOrElse(ThirstyPlayer::reset,
-            () -> log.error("The unregistered player {} died!", player.getName()));
+    public static synchronized void reset(Player player) {
+        Optional.ofNullable(players.get(player))
+                .ifPresentOrElse(ThirstyPlayer::reset,
+                        () -> log.error("The unregistered player {} died!", player.getName()));
     }
 }

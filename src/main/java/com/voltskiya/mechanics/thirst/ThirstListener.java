@@ -1,5 +1,6 @@
 package com.voltskiya.mechanics.thirst;
 
+import com.voltskiya.mechanics.VoltskiyaItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,7 +14,7 @@ public class ThirstListener implements Listener {
 
     @EventHandler
     public void onConsume(PlayerItemConsumeEvent e) {
-        ThirstItem.consumeUse(e);
+        new VoltskiyaItemStack(e.getItem()).consumeUse(e.getPlayer());
     }
 
     @EventHandler
