@@ -6,14 +6,25 @@ import com.voltskiya.lib.acf.BukkitCommandManager;
 import com.voltskiya.mechanics.Item;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import com.voltskiya.mechanics.thirst.config.ThirstConfig;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.v1_19_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_19_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_19_R1.util.CraftNamespacedKey;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionType;
+
+import java.util.List;
 
 public class ThirstModule extends AbstractModule {
-    public static final NamespacedKey THIRST_CONSUMABLE_KEY = VoltskiyaPlugin.get().namespacedKey("thirst.consumable");
     private static BukkitCommandManager acf;
 
     public static void registerCommand(BaseCommand command) {
@@ -83,5 +94,30 @@ public class ThirstModule extends AbstractModule {
         filteredCanteen.setIngredient('L', Material.LEATHER);
         filteredCanteen.setIngredient('S', Material.STRING);
         Bukkit.addRecipe(filteredCanteen);
+
+        RecipeManager recipeManager = ((CraftServer) Bukkit.getServer()).getServer().getRecipeManager();
+        recipeManager.addRecipe(new SmeltingRecipe(CraftNamespacedKey.toMinecraft(VoltskiyaPlugin.get().namespacedKey("canteen_purified")),
+                "",
+                new Ingredient(List.of(new Ingredient.ItemValue(CraftItemStack.asNMSCopy(Item.CANTEEN_DIRTY.toItemStack()))).stream()),
+                CraftItemStack.asNMSCopy(Item.CANTEEN_FULL.toItemStack()),
+                0,
+                200));
+        ItemStack waterBottle = new ItemStack(Material.POTION);
+        PotionMeta pmeta = (PotionMeta) waterBottle.getItemMeta();
+        PotionData pdata = new PotionData(PotionType.WATER);
+        pmeta.setBasePotionData(pdata);
+        waterBottle.setItemMeta(pmeta);
+        recipeManager.addRecipe(new SmeltingRecipe(CraftNamespacedKey.toMinecraft(VoltskiyaPlugin.get().namespacedKey("bottle_purified")),
+                "",
+                new Ingredient(List.of(new Ingredient.ItemValue(CraftItemStack.asNMSCopy(Item.BOTTLE_DIRTY.toItemStack()))).stream()),
+                CraftItemStack.asNMSCopy(waterBottle),
+                0,
+                200));
+        recipeManager.addRecipe(new SmeltingRecipe(CraftNamespacedKey.toMinecraft(VoltskiyaPlugin.get().namespacedKey("simple_bottle_purified")),
+                "",
+                new Ingredient(List.of(new Ingredient.ItemValue(CraftItemStack.asNMSCopy(Item.SIMPLE_BOTTLE_DIRTY.toItemStack()))).stream()),
+                CraftItemStack.asNMSCopy(Item.SIMPLE_BOTTLE_FULL.toItemStack()),
+                0,
+                200));
     }
 }
