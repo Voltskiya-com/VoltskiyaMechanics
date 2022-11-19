@@ -1,5 +1,6 @@
 package com.voltskiya.mechanics.thirst;
 
+import com.voltskiya.mechanics.PlayerHud;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 
 import java.io.File;

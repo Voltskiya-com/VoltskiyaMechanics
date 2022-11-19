@@ -22,7 +22,7 @@ import java.util.Optional;
 public enum Item {
     UNKNOWN(Material.AIR, new ItemConfig(-1, Component.empty(), Collections.emptyList()) {
         @Override
-        public Tag[] getTags() {
+        public Tag<?, ?>[] getTags() {
             return new Tag[0];
         }
     }),
@@ -40,7 +40,7 @@ public enum Item {
 
     private final Material material;
     private final int texture;
-    private final Tag[] tags;
+    private final Tag<?, ?>[] tags;
     private final Component name;
     private final List<Component> lore;
 
@@ -68,6 +68,17 @@ public enum Item {
     private static final NamespacedKey ITEM_KEY = VoltskiyaPlugin.get().namespacedKey("item_name");
     public ItemStack toItemStack() {
         ItemStack itemStack = new ItemStack(material);
+        setItemMeta(itemStack);
+        return itemStack;
+    }
+
+    public void set(ItemStack itemStack) {
+        itemStack.setType(material);
+        itemStack.setAmount(1);
+        setItemMeta(itemStack);
+    }
+
+    private void setItemMeta(ItemStack itemStack) {
         ItemMeta itemMeta = itemStack.getItemMeta();
         itemMeta.setCustomModelData(texture);
         itemMeta.displayName(name);
@@ -76,7 +87,6 @@ public enum Item {
         itemMeta.lore(lore);
         Arrays.stream(tags).forEach(tag -> tag.set(container));
         itemStack.setItemMeta(itemMeta);
-        return itemStack;
     }
 
 

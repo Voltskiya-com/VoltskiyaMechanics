@@ -1,6 +1,5 @@
-package com.voltskiya.mechanics.thirst;
+package com.voltskiya.mechanics;
 
-import com.voltskiya.mechanics.VoltskiyaPlugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
