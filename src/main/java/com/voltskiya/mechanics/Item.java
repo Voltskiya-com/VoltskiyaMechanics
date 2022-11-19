@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 public enum Item {
     UNKNOWN(Material.AIR, new ItemConfig(-1, Component.empty(), Collections.emptyList()) {
@@ -27,13 +26,13 @@ public enum Item {
         }
     }),
 
-    CANTEEN_EMPTY(Material.POTION, ThirstConfig.get("canteen_empty")),
+    CANTEEN_EMPTY(Material.GLASS_BOTTLE, ThirstConfig.get("canteen_empty")),
     CANTEEN_FULL(Material.POTION, ThirstConfig.get("canteen_full")),
     CANTEEN_DIRTY(Material.POTION, ThirstConfig.get("canteen_dirty")),
-    SIMPLE_BOTTLE_EMPTY(Material.POTION, ThirstConfig.get("simple_bottle_empty")),
+    SIMPLE_BOTTLE_EMPTY(Material.GLASS_BOTTLE, ThirstConfig.get("simple_bottle_empty")),
     SIMPLE_BOTTLE_FULL(Material.POTION, ThirstConfig.get("simple_bottle_full")),
     SIMPLE_BOTTLE_DIRTY(Material.POTION, ThirstConfig.get("simple_bottle_dirty")),
-    FILTERED_CANTEEN_EMPTY(Material.POTION, ThirstConfig.get("filtered_canteen_empty")),
+    FILTERED_CANTEEN_EMPTY(Material.GLASS_BOTTLE, ThirstConfig.get("filtered_canteen_empty")),
     FILTERED_CANTEEN_FULL(Material.POTION, ThirstConfig.get("filtered_canteen_full")),
     BOTTLE_DIRTY(Material.POTION, ThirstConfig.get("bottle_dirty"))
     ;

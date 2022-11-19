@@ -17,7 +17,7 @@ public class ThirstListener implements Listener {
 
     @EventHandler
     public void onConsume(PlayerItemConsumeEvent e) {
-        new ConsumableItemStack(e.getItem()).consumeUse(e.getPlayer());
+        e.setCancelled(new ConsumableItemStack(e.getItem()).consumeUse(e.getPlayer()));
     }
 
     @EventHandler
@@ -47,7 +47,7 @@ public class ThirstListener implements Listener {
         Action action = e.getAction();
         if(action == Action.LEFT_CLICK_AIR) {
             ConsumableItemStack itemStack = new ConsumableItemStack(e.getItem());
-            if (!itemStack.isConsumable())
+            if (itemStack.getItemStack().getType() != Material.POTION)
                 return;
             Item item = itemStack.getItem();
             if(item == Item.BOTTLE_DIRTY) {
@@ -72,28 +72,34 @@ public class ThirstListener implements Listener {
             return;
         Block clickedBlock = e.getClickedBlock();
         assert clickedBlock != null;
+        if (clickedBlock.getType() == Material.CAULDRON)
+            e.setCancelled(!Item.UNKNOWN.is(e.getItem()));//Custom water bottles
         if (clickedBlock.getType() != Material.WATER)
             return;
         ItemStack itemStack = e.getItem();
         if (itemStack == null)
             return;
         VoltskiyaItemStack voltskiyaItemStack = new VoltskiyaItemStack(itemStack);
-        if (itemStack.getType() == Material.GLASS_BOTTLE) {
+        Item item = voltskiyaItemStack.getItem();
+        if (item == Item.UNKNOWN && itemStack.getType() == Material.GLASS_BOTTLE) {
             voltskiyaItemStack.changeTo(Item.BOTTLE_DIRTY, e.getPlayer());
+            e.setCancelled(true);
             return;
         }
-        Item item = voltskiyaItemStack.getItem();
         if (item == Item.CANTEEN_EMPTY) {
             voltskiyaItemStack.changeTo(Item.CANTEEN_DIRTY, e.getPlayer());
+            e.setCancelled(true);
             return;
         }
         if (item == Item.SIMPLE_BOTTLE_EMPTY) {
             voltskiyaItemStack.changeTo(Item.SIMPLE_BOTTLE_DIRTY, e.getPlayer());
+            e.setCancelled(true);
             return;
         }
 
         if (item == Item.FILTERED_CANTEEN_EMPTY) {
             voltskiyaItemStack.changeTo(Item.FILTERED_CANTEEN_FULL, e.getPlayer());
+            e.setCancelled(true);
         }
     }
 }

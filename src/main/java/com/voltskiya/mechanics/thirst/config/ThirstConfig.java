@@ -6,6 +6,8 @@ import com.voltskiya.mechanics.Item;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import com.voltskiya.mechanics.thirst.ThirstModule;
 import java.util.Collections;
+
+import lombok.Getter;
 import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -28,7 +30,7 @@ public class ThirstConfig {
 
     private final List<ThirstEffect> effects = new ArrayList<>();
     private final Map<String, ConsumableItemConfig> consumables = new HashMap<>();
-    private final Map<Material, ConsumableItemConfig> defaultConsumables = new HashMap<>();
+    private final Map<Material, Integer> defaultConsumables = new HashMap<>();
 
     private final int thirstRate = 1;
     private static ThirstConfig instance;
@@ -83,7 +85,15 @@ public class ThirstConfig {
         get().consumables.put(id, config);
         save();
         return config;
+    }
 
+    public static int getConsumeAmount(Material material) {
+        Integer consumeAmount = get().defaultConsumables.get(material);
+        if (consumeAmount != null)
+            return consumeAmount;
+        get().defaultConsumables.put(material, 0);
+        save();
+        return 0;
     }
 
     public static class ConsumableItemConfig extends Item.ItemConfig {
@@ -91,6 +101,7 @@ public class ThirstConfig {
         public static final NamespacedKey USES_KEY = VoltskiyaPlugin.get().namespacedKey("thirst.consumable.used_count");
         public static final NamespacedKey CONSUME_AMOUNT_KEY = VoltskiyaPlugin.get().namespacedKey("thirst.consumable.consume_amount");
         private final int uses;
+        @Getter
         private final int consumeAmount;
 
         public ConsumableItemConfig(int texture, Component name, List<Component> lore, int uses, int consumeAmount) {
@@ -105,7 +116,7 @@ public class ThirstConfig {
 
         @Override
         public Item.Tag<?, ?>[] getTags() {
-            return new Item.Tag[]{new Item.Tag<>(USES_KEY, PersistentDataType.INTEGER, uses), new Item.Tag<>(CONSUME_AMOUNT_KEY, PersistentDataType.INTEGER, consumeAmount)};
+            return new Item.Tag<?, ?>[]{new Item.Tag<>(USES_KEY, PersistentDataType.INTEGER, uses)};
         }
     }
 }
