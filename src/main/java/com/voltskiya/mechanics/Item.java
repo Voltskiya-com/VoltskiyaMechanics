@@ -80,17 +80,11 @@ public enum Item {
     }
 
 
-    public static class Tag {
+    @AllArgsConstructor
+    public static class Tag<T, Z> {
         private final NamespacedKey key;
-        private final Object value;
-        private final PersistentDataType type;
-
-
-        public Tag(NamespacedKey key, int value) {
-            this.key = key;
-            this.value = value;
-            type = PersistentDataType.INTEGER;
-        }
+        private final PersistentDataType<T, Z> type;
+        private final Z value;
 
         private void set(PersistentDataContainer container) {
             container.set(key, type, value);
@@ -127,7 +121,7 @@ public enum Item {
         private final int texture;
         private final Component name;
         private final List<Component> lore;
-        public abstract Tag[] getTags();
+        public abstract Tag<?, ?>[] getTags();
 
     }
 }

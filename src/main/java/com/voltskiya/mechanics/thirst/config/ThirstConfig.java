@@ -11,9 +11,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileReader;
@@ -104,8 +104,8 @@ public class ThirstConfig {
         }
 
         @Override
-        public Item.Tag[] getTags() {
-            return new Item.Tag[]{new Item.Tag(USES_KEY, uses), new Item.Tag(CONSUME_AMOUNT_KEY, consumeAmount)};
+        public Item.Tag<?, ?>[] getTags() {
+            return new Item.Tag[]{new Item.Tag<>(USES_KEY, PersistentDataType.INTEGER, uses), new Item.Tag<>(CONSUME_AMOUNT_KEY, PersistentDataType.INTEGER, consumeAmount)};
         }
     }
 }
