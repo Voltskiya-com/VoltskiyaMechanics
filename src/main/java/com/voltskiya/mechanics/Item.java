@@ -15,10 +15,18 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 public enum Item {
+    UNKNOWN(Material.AIR, new ItemConfig(-1, Component.empty(), Collections.emptyList()) {
+        @Override
+        public Tag[] getTags() {
+            return new Tag[0];
+        }
+    }),
+
     CANTEEN_EMPTY(Material.POTION, ThirstConfig.get("canteen_empty")),
     CANTEEN_FULL(Material.POTION, ThirstConfig.get("canteen_full")),
     CANTEEN_DIRTY(Material.POTION, ThirstConfig.get("canteen_dirty")),
@@ -26,7 +34,8 @@ public enum Item {
     SIMPLE_BOTTLE_FULL(Material.POTION, ThirstConfig.get("simple_bottle_full")),
     SIMPLE_BOTTLE_DIRTY(Material.POTION, ThirstConfig.get("simple_bottle_dirty")),
     FILTERED_CANTEEN_EMPTY(Material.POTION, ThirstConfig.get("filtered_canteen_empty")),
-    FILTERED_CANTEEN_FULL(Material.POTION, ThirstConfig.get("filtered_canteen_full"))
+    FILTERED_CANTEEN_FULL(Material.POTION, ThirstConfig.get("filtered_canteen_full")),
+    BOTTLE_DIRTY(Material.POTION, ThirstConfig.get("bottle_dirty"))
     ;
 
     private final Material material;
@@ -44,19 +53,16 @@ public enum Item {
         lore = config.getLore();
     }
 
-    public static Optional<Item> getItem(ItemStack itemStack) {
+    public static Item getItem(ItemStack itemStack) {
         if (!itemStack.hasItemMeta())
-            return Optional.empty();
+            return UNKNOWN;
         ItemMeta itemMeta = itemStack.getItemMeta();
         var container = itemMeta.getPersistentDataContainer();
-        return Optional.ofNullable(container.get(ITEM_KEY, ItemType.ITEM));
+        return container.getOrDefault(ITEM_KEY, ItemType.ITEM, UNKNOWN);
     }
 
     public boolean is(ItemStack itemStack) {
-        Optional<Item> item = getItem(itemStack);
-        if (item.isEmpty())
-            return false;
-        return item.get() == this;
+        return getItem(itemStack) == this;
     }
 
     private static final NamespacedKey ITEM_KEY = VoltskiyaPlugin.get().namespacedKey("item_name");

@@ -10,7 +10,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.voltskiya.mechanics.thirst.config.ThirstConfig.ConsumableItemConfig.CONSUME_AMOUNT_KEY;
@@ -33,7 +32,7 @@ public class VoltskiyaItemStack {
         itemStack = item.toItemStack();
     }
 
-    public Optional<Item> getItem() {
+    public Item getItem() {
         return Item.getItem(itemStack);
     }
 
@@ -41,7 +40,8 @@ public class VoltskiyaItemStack {
         if (!decreaseUsesCount())
             return;
         AtomicBoolean isDirty = new AtomicBoolean(false);
-        getItem().ifPresent(item -> isDirty.set(item == Item.CANTEEN_DIRTY || item == Item.SIMPLE_BOTTLE_DIRTY));
+        Item item = getItem();
+        isDirty.set(item == Item.CANTEEN_DIRTY || item == Item.SIMPLE_BOTTLE_DIRTY || item == Item.BOTTLE_DIRTY);
         ThirstyPlayer.getPlayer(player).drink(getKeyOrDefault(CONSUME_AMOUNT_KEY, PersistentDataType.INTEGER, 0), isDirty.get());
     }
 
