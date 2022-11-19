@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.voltskiya.mechanics.Item;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import com.voltskiya.mechanics.thirst.ThirstModule;
+import java.util.Collections;
 import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -75,10 +76,18 @@ public class ThirstConfig {
     }
 
     public static ConsumableItemConfig get(String id) {
-        return get().consumables.get(id);
+        ConsumableItemConfig config = get().consumables.get(id);
+        if (config != null)
+            return config;
+        config = ConsumableItemConfig.createDefault(id);
+        get().consumables.put(id, config);
+        save();
+        return config;
+
     }
 
     public static class ConsumableItemConfig extends Item.ItemConfig {
+
         public static final NamespacedKey USES_KEY = VoltskiyaPlugin.get().namespacedKey("thirst.consumable.used_count");
         public static final NamespacedKey CONSUME_AMOUNT_KEY = VoltskiyaPlugin.get().namespacedKey("thirst.consumable.consume_amount");
         private final int uses;
@@ -90,9 +99,13 @@ public class ThirstConfig {
             this.consumeAmount = consumeAmount;
         }
 
+        public static ConsumableItemConfig createDefault(String id) {
+            return new ConsumableItemConfig(0, Component.text(id), Collections.emptyList(), 1, 300);
+        }
+
         @Override
         public Item.Tag[] getTags() {
-            return new Item.Tag[] {new Item.Tag(USES_KEY, uses), new Item.Tag(CONSUME_AMOUNT_KEY, consumeAmount)};
+            return new Item.Tag[]{new Item.Tag(USES_KEY, uses), new Item.Tag(CONSUME_AMOUNT_KEY, consumeAmount)};
         }
     }
 }
