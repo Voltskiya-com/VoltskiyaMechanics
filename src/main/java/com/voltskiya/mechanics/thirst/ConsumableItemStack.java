@@ -2,16 +2,16 @@ package com.voltskiya.mechanics.thirst;
 
 import com.voltskiya.mechanics.Item;
 import com.voltskiya.mechanics.VoltskiyaItemStack;
+import com.voltskiya.mechanics.VoltskiyaPlayer;
 import com.voltskiya.mechanics.thirst.config.ThirstConfig;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
-
-import static com.voltskiya.mechanics.thirst.config.ThirstConfig.ConsumableItemConfig.CONSUME_AMOUNT_KEY;
-import static com.voltskiya.mechanics.thirst.config.ThirstConfig.ConsumableItemConfig.USES_KEY;
+import org.jetbrains.annotations.Nullable;
 
 public class ConsumableItemStack extends VoltskiyaItemStack {
     public ConsumableItemStack(ItemStack itemStack) {
@@ -26,62 +26,57 @@ public class ConsumableItemStack extends VoltskiyaItemStack {
         super(item);
     }
 
-    public boolean consumeUse(Player player) {
-        Material material = itemStack.getType();
-        if (material == Material.HONEY_BOTTLE || material == Material.MILK_BUCKET || isStandardPotion()) {
-            ThirstyPlayer.getPlayer(player).drink(ThirstConfig.getConsumeAmount(material), false);
-            return false;
+    @Nullable
+    public ItemStack consumeUse(Player player, @Nullable ItemStack replacement) {
+        int consumeAmountByKey = getConsumeAmount();
+        VoltskiyaPlayer voltskiyaPlayer = VoltskiyaPlayer.getPlayer(player);
+        if (-1 != consumeAmountByKey) {
+            voltskiyaPlayer.drink(consumeAmountByKey, isDirty());
+            return decreaseUsesCount(replacement);
         }
-        if (material != Material.POTION)
-            return false;
-        if (getItem() == Item.BOTTLE_DIRTY) {
-            ThirstyPlayer.getPlayer(player).drink(ThirstConfig.getConsumeAmount(material), true);
-            return false;
-        }
-        if (!decreaseUsesCount())
-            return false;
-        int consumeAmount = getConsumeAmount();
-        if (consumeAmount != -1) {
-            ThirstyPlayer.getPlayer(player).drink(consumeAmount, isDirty());
-            return true;
-        }
-        return false;
+        Material material = getItemStack().getType();
+        int consumeAmountByMaterial = ThirstConfig.getMaterialConsumeAmount(material);
+        if (-1 != consumeAmountByMaterial)
+            voltskiyaPlayer.drink(consumeAmountByMaterial, false);
+        return replacement;
     }
 
     private int getConsumeAmount() {
-        return getKeyOrDefault(CONSUME_AMOUNT_KEY, PersistentDataType.INTEGER, -1);
+        return getKeyOrDefault(ThirstConfig.ConsumableItemConfig.CONSUME_AMOUNT_KEY, PersistentDataType.INTEGER, -1);
+    }
+
+    private int getUsesCount() {
+        return getKeyOrDefault(ThirstConfig.ConsumableItemConfig.USES_KEY, PersistentDataType.INTEGER, -1);
+    }
+
+    public static ItemStack getWaterBottle() {
+        ItemStack waterBottle = new ItemStack(Material.POTION);
+        PotionMeta pmeta = (PotionMeta)waterBottle.getItemMeta();
+        PotionData pdata = new PotionData(PotionType.WATER);
+        pmeta.setBasePotionData(pdata);
+        waterBottle.setItemMeta(pmeta);
+        return waterBottle;
     }
 
     private boolean isDirty() {
         Item item = getItem();
-        return item == Item.CANTEEN_DIRTY || item == Item.SIMPLE_BOTTLE_DIRTY || item == Item.BOTTLE_DIRTY;
+        return Item.CANTEEN_DIRTY == item || Item.SIMPLE_BOTTLE_DIRTY == item || Item.BOTTLE_DIRTY == item;
     }
 
-    private boolean isStandardPotion() {
-        return itemStack.getType() == Material.POTION &&
-                ((PotionMeta) itemStack.getItemMeta()).getBasePotionData().getType() != PotionType.UNCRAFTABLE;
-    }
-
-    private boolean decreaseUsesCount() {
-        int usedCount = getUsedCount();
-        if (usedCount == -1)
-            return false;
-        usedCount--;
-        if (usedCount == 0) {
-            Item item = getItem();
-            if (item == Item.CANTEEN_FULL || item == Item.CANTEEN_DIRTY)
-                Item.CANTEEN_EMPTY.set(itemStack);
-            else if (item == Item.FILTERED_CANTEEN_FULL)
-                Item.FILTERED_CANTEEN_EMPTY.set(itemStack);
-            else if (item == Item.SIMPLE_BOTTLE_FULL || item == Item.SIMPLE_BOTTLE_DIRTY)
-                Item.SIMPLE_BOTTLE_EMPTY.set(itemStack);
-            return true;
+    private @Nullable ItemStack decreaseUsesCount(@Nullable ItemStack replacement) {
+        int usesCount = getUsesCount();
+        if (-1 == usesCount)
+            return replacement;
+        --usesCount;
+        if (0 < usesCount) {
+            setKey(ThirstConfig.ConsumableItemConfig.USES_KEY, PersistentDataType.INTEGER, usesCount);
+            return getItemStack();
         }
-        setKey(USES_KEY, PersistentDataType.INTEGER, usedCount);
-        return true;
-    }
-
-    private int getUsedCount() {
-        return getKeyOrDefault(USES_KEY, PersistentDataType.INTEGER, -1);
+        Item item = getItem();
+        if (Item.CANTEEN_FULL == item || Item.CANTEEN_DIRTY == item)
+            return Item.CANTEEN_EMPTY.toItemStack();
+        if (Item.FILTERED_CANTEEN_FULL == item)
+            return Item.FILTERED_CANTEEN_EMPTY.toItemStack();
+        return Item.SIMPLE_BOTTLE_FULL != item && Item.SIMPLE_BOTTLE_DIRTY != item ? null : Item.SIMPLE_BOTTLE_EMPTY.toItemStack();
     }
 }
