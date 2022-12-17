@@ -1,123 +1,62 @@
 package com.voltskiya.mechanics.thirst;
 
 import com.voltskiya.lib.AbstractModule;
-import com.voltskiya.lib.acf.BaseCommand;
-import com.voltskiya.lib.acf.BukkitCommandManager;
+import com.voltskiya.lib.AbstractVoltPlugin;
 import com.voltskiya.mechanics.Item;
-import com.voltskiya.mechanics.VoltskiyaPlugin;
+import com.voltskiya.mechanics.VoltskiyaPlayer;
+import com.voltskiya.mechanics.VoltskiyaRecipeManager;
 import com.voltskiya.mechanics.thirst.config.ThirstConfig;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.item.crafting.SmeltingRecipe;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.v1_19_R1.CraftServer;
-import org.bukkit.craftbukkit.v1_19_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_19_R1.util.CraftNamespacedKey;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.ShapelessRecipe;
-import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
-import org.bukkit.potion.PotionType;
-
-import java.util.List;
 
 public class ThirstModule extends AbstractModule {
-    private static BukkitCommandManager acf;
-
-    public static void registerCommand(BaseCommand command) {
-        acf.registerCommand(command);
-    }
-
-    public static ThirstModule instance;
+    private static ThirstModule instance;
 
     public static ThirstModule get() {
         return instance;
     }
 
-    public ThirstModule(){
+    public ThirstModule() {
         instance = this;
     }
-    @Override
+
     public void init() {
         ThirstConfig.load();
     }
 
-    @Override
     public void enable() {
-        ThirstyPlayer.load();
-        Bukkit.getScheduler().runTaskTimerAsynchronously(getPlugin(), ThirstyPlayer::updatePlayers, 0, 20);
+        VoltskiyaPlayer.load();
+        Bukkit.getScheduler().runTaskTimerAsynchronously(getPlugin(), VoltskiyaPlayer::updatePlayers, 0L, 20L);
         getPlugin().registerEvents(new ThirstListener());
-        acf = new BukkitCommandManager(getPlugin());
         new ThirstCommandACF();
         registerRecipes();
     }
-    @Override
+
+    public NamespacedKey getKey(String key) {
+        AbstractVoltPlugin var10000 = getPlugin();
+        String var10001 = getName();
+        return var10000.namespacedKey(var10001 + "." + key);
+    }
+
+    public static NamespacedKey key(String key) {
+        return get().getKey(key);
+    }
+
     public String getName() {
         return "Thirst";
     }
 
-
-    @Override
     public void onDisable() {
-        ThirstyPlayer.save();
+        VoltskiyaPlayer.save();
     }
 
-
     private void registerRecipes() {
-        ShapedRecipe canteen = new ShapedRecipe(
-            new NamespacedKey(ThirstModule.get().getPlugin(), "canteen"), Item.CANTEEN_EMPTY.toItemStack());
-        canteen.shape(
-            "L  ",
-            "LIL",
-            " L ");
-        canteen.setIngredient('L', Material.LEATHER);
-        canteen.setIngredient('I', Material.IRON_INGOT);
-        Bukkit.addRecipe(canteen);
-
-        ShapelessRecipe simpleBottle = new ShapelessRecipe(
-            new NamespacedKey(ThirstModule.get().getPlugin(), "simple_bottle"),
-            Item.SIMPLE_BOTTLE_EMPTY.toItemStack());
-        simpleBottle.addIngredient(Material.LEATHER);
-        Bukkit.addRecipe(simpleBottle);
-
-        ShapedRecipe filteredCanteen = new ShapedRecipe(
-            new NamespacedKey(ThirstModule.get().getPlugin(), "filtered_canteen"),
-            Item.FILTERED_CANTEEN_EMPTY.toItemStack());
-        filteredCanteen.shape(
-            "ISI",
-            "LSL",
-            "LLL");
-        filteredCanteen.setIngredient('I', Material.IRON_INGOT);
-        filteredCanteen.setIngredient('L', Material.LEATHER);
-        filteredCanteen.setIngredient('S', Material.STRING);
-        Bukkit.addRecipe(filteredCanteen);
-
-        RecipeManager recipeManager = ((CraftServer) Bukkit.getServer()).getServer().getRecipeManager();
-        recipeManager.addRecipe(new SmeltingRecipe(CraftNamespacedKey.toMinecraft(VoltskiyaPlugin.get().namespacedKey("canteen_purified")),
-                "",
-                new Ingredient(List.of(new Ingredient.ItemValue(CraftItemStack.asNMSCopy(Item.CANTEEN_DIRTY.toItemStack()))).stream()),
-                CraftItemStack.asNMSCopy(Item.CANTEEN_FULL.toItemStack()),
-                0,
-                200));
-        ItemStack waterBottle = new ItemStack(Material.POTION);
-        PotionMeta pmeta = (PotionMeta) waterBottle.getItemMeta();
-        PotionData pdata = new PotionData(PotionType.WATER);
-        pmeta.setBasePotionData(pdata);
-        waterBottle.setItemMeta(pmeta);
-        recipeManager.addRecipe(new SmeltingRecipe(CraftNamespacedKey.toMinecraft(VoltskiyaPlugin.get().namespacedKey("bottle_purified")),
-                "",
-                new Ingredient(List.of(new Ingredient.ItemValue(CraftItemStack.asNMSCopy(Item.BOTTLE_DIRTY.toItemStack()))).stream()),
-                CraftItemStack.asNMSCopy(waterBottle),
-                0,
-                200));
-        recipeManager.addRecipe(new SmeltingRecipe(CraftNamespacedKey.toMinecraft(VoltskiyaPlugin.get().namespacedKey("simple_bottle_purified")),
-                "",
-                new Ingredient(List.of(new Ingredient.ItemValue(CraftItemStack.asNMSCopy(Item.SIMPLE_BOTTLE_DIRTY.toItemStack()))).stream()),
-                CraftItemStack.asNMSCopy(Item.SIMPLE_BOTTLE_FULL.toItemStack()),
-                0,
-                200));
+        VoltskiyaRecipeManager.shaped(key("canteen"), Item.CANTEEN_EMPTY, new String[]{"L  ", "LIL", " L "}, new VoltskiyaRecipeManager.IngredientMapping('L', Material.LEATHER), new VoltskiyaRecipeManager.IngredientMapping('I', Material.IRON_INGOT));
+        VoltskiyaRecipeManager.shaped(key("filtered_canteen"), Item.FILTERED_CANTEEN_EMPTY, new String[]{"ISI", "LSL", "LLL"}, new VoltskiyaRecipeManager.IngredientMapping('I', Material.IRON_INGOT), new VoltskiyaRecipeManager.IngredientMapping('I', Material.IRON_INGOT), new VoltskiyaRecipeManager.IngredientMapping('S', Material.STRING));
+        VoltskiyaRecipeManager.shapeless(key("simple_bottle"), Item.SIMPLE_BOTTLE_EMPTY, new VoltskiyaRecipeManager.IngredientChoice(Material.LEATHER));
+        VoltskiyaRecipeManager.furnace(key("canteen_purified"), Item.CANTEEN_FULL.toItemStack(), Item.CANTEEN_DIRTY);
+        VoltskiyaRecipeManager.furnace(key("bottle_purified"), ConsumableItemStack.getWaterBottle(), Item.BOTTLE_DIRTY);
+        VoltskiyaRecipeManager.furnace(key("simple_bottle_purified"), Item.SIMPLE_BOTTLE_FULL.toItemStack(), Item.SIMPLE_BOTTLE_DIRTY);
     }
 }

@@ -1,9 +1,12 @@
 package com.voltskiya.mechanics;
 
 import com.voltskiya.mechanics.thirst.config.ThirstConfig;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -14,57 +17,56 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 public enum Item {
-    UNKNOWN(Material.AIR, new ItemConfig(-1, Component.empty(), Collections.emptyList()) {
-        @Override
-        public Tag<?, ?>[] getTags() {
-            return new Tag[0];
+    UNKNOWN(Material.AIR, new Item.ItemConfig(-1, Component.empty(), Collections.emptyList()) {
+        public Item.Tag<?, ?>[] getTags() {
+            return new Item.Tag[0];
         }
     }),
-
-    CANTEEN_EMPTY(Material.GLASS_BOTTLE, ThirstConfig.get("canteen_empty")),
-    CANTEEN_FULL(Material.POTION, ThirstConfig.get("canteen_full")),
-    CANTEEN_DIRTY(Material.POTION, ThirstConfig.get("canteen_dirty")),
-    SIMPLE_BOTTLE_EMPTY(Material.GLASS_BOTTLE, ThirstConfig.get("simple_bottle_empty")),
-    SIMPLE_BOTTLE_FULL(Material.POTION, ThirstConfig.get("simple_bottle_full")),
-    SIMPLE_BOTTLE_DIRTY(Material.POTION, ThirstConfig.get("simple_bottle_dirty")),
-    FILTERED_CANTEEN_EMPTY(Material.GLASS_BOTTLE, ThirstConfig.get("filtered_canteen_empty")),
-    FILTERED_CANTEEN_FULL(Material.POTION, ThirstConfig.get("filtered_canteen_full")),
-    BOTTLE_DIRTY(Material.POTION, ThirstConfig.get("bottle_dirty"))
-    ;
+    CANTEEN_EMPTY(Material.GLASS_BOTTLE, ThirstConfig.compute("canteen_empty", false, 0)),
+    CANTEEN_FULL(Material.POTION, ThirstConfig.compute("canteen_full", false, 4)),
+    CANTEEN_DIRTY(Material.POTION, ThirstConfig.compute("canteen_dirty", true, 4)),
+    SIMPLE_BOTTLE_EMPTY(Material.GLASS_BOTTLE, ThirstConfig.compute("simple_bottle_empty", false, 1)),
+    SIMPLE_BOTTLE_FULL(Material.POTION, ThirstConfig.compute("simple_bottle_full", false, 1)),
+    SIMPLE_BOTTLE_DIRTY(Material.POTION, ThirstConfig.compute("simple_bottle_dirty", true, 1)),
+    FILTERED_CANTEEN_EMPTY(Material.GLASS_BOTTLE, ThirstConfig.compute("filtered_canteen_empty", false, 4)),
+    FILTERED_CANTEEN_FULL(Material.POTION, ThirstConfig.compute("filtered_canteen_full", false, 4)),
+    BOTTLE_DIRTY(Material.POTION, ThirstConfig.compute("bottle_dirty", true, 1));
 
     private final Material material;
     private final int texture;
-    private final Tag<?, ?>[] tags;
-    private final Component name;
+    private final Item.Tag<?, ?>[] tags;
+    private final Component displayName;
     private final List<Component> lore;
+    private static final NamespacedKey ITEM_KEY = VoltskiyaPlugin.get().namespacedKey("item_name");
 
-
-    Item(Material material, ItemConfig config) {
+    Item(Material material, Item.ItemConfig config) {
         this.material = material;
         texture = config.getTexture();
-        this.tags = config.getTags();
-        name = config.getName();
+        tags = config.getTags();
+        displayName = config.getName();
         lore = config.getLore();
     }
 
     public static Item getItem(ItemStack itemStack) {
-        if (!itemStack.hasItemMeta())
+        if (!itemStack.hasItemMeta()) {
             return UNKNOWN;
+        }
         ItemMeta itemMeta = itemStack.getItemMeta();
-        var container = itemMeta.getPersistentDataContainer();
-        return container.getOrDefault(ITEM_KEY, ItemType.ITEM, UNKNOWN);
+        PersistentDataContainer container = itemMeta.getPersistentDataContainer();
+
+        try {
+            String name = container.getOrDefault(ITEM_KEY, PersistentDataType.STRING, "");
+            return valueOf(name);
+        } catch (IllegalArgumentException ignored) {
+            return UNKNOWN;
+        }
     }
 
     public boolean is(ItemStack itemStack) {
         return getItem(itemStack) == this;
     }
 
-    private static final NamespacedKey ITEM_KEY = VoltskiyaPlugin.get().namespacedKey("item_name");
     public ItemStack toItemStack() {
         ItemStack itemStack = new ItemStack(material);
         setItemMeta(itemStack);
@@ -80,19 +82,28 @@ public enum Item {
     private void setItemMeta(ItemStack itemStack) {
         ItemMeta itemMeta = itemStack.getItemMeta();
         itemMeta.setCustomModelData(texture);
-        itemMeta.displayName(name);
-        var container = itemMeta.getPersistentDataContainer();
-        container.set(ITEM_KEY, ItemType.ITEM, this);
+        itemMeta.displayName(displayName);
+        PersistentDataContainer container = itemMeta.getPersistentDataContainer();
+        container.set(ITEM_KEY, PersistentDataType.STRING, name());
         itemMeta.lore(lore);
         Arrays.stream(tags).forEach(tag -> tag.set(container));
         itemStack.setItemMeta(itemMeta);
     }
 
+    @AllArgsConstructor
+    @Getter
+    public abstract static class ItemConfig {
+        private final int texture;
+        private final Component name;
+        private final List<Component> lore;
+
+        public abstract Item.Tag<?, ?>[] getTags();
+    }
 
     @AllArgsConstructor
     public static class Tag<T, Z> {
         private final NamespacedKey key;
-        private final PersistentDataType<T, Z> type;
+        private final PersistentDataType<T, ? super Z> type;
         private final Z value;
 
         private void set(PersistentDataContainer container) {
@@ -100,37 +111,27 @@ public enum Item {
         }
     }
 
-    private static class ItemType implements PersistentDataType<String, Item>{
-        private static final ItemType ITEM = new ItemType();
-        @Override
-        public @NotNull Class<String> getPrimitiveType() {
+    private static class ItemType implements PersistentDataType<String, Item> {
+        private static final Item.ItemType ITEM = new Item.ItemType();
+
+        @NotNull
+        public Class<String> getPrimitiveType() {
             return String.class;
         }
 
-        @Override
-        public @NotNull Class<Item> getComplexType() {
+        @NotNull
+        public Class<Item> getComplexType() {
             return Item.class;
         }
 
-        @Override
-        public @NotNull String toPrimitive(@NotNull Item complex, @NotNull PersistentDataAdapterContext context) {
+        @NotNull
+        public String toPrimitive(@NotNull Item complex, @NotNull PersistentDataAdapterContext context) {
             return complex.name();
         }
 
-        @Override
-        public @NotNull Item fromPrimitive(@NotNull String primitive, @NotNull PersistentDataAdapterContext context) {
-            return Item.valueOf(primitive);
+        @NotNull
+        public Item fromPrimitive(@NotNull String primitive, @NotNull PersistentDataAdapterContext context) {
+            return valueOf(primitive);
         }
-    }
-
-    @AllArgsConstructor
-    @Getter
-    @Setter
-    public static abstract class ItemConfig {
-        private final int texture;
-        private final Component name;
-        private final List<Component> lore;
-        public abstract Tag<?, ?>[] getTags();
-
     }
 }
