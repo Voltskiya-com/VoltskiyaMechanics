@@ -8,13 +8,13 @@ import java.util.List;
 
 public class VoltskiyaPlugin extends AbstractVoltPlugin {
 
-    private static VoltskiyaPlugin instance;
+    private static AbstractVoltPlugin instance;
 
     public VoltskiyaPlugin() {
         instance = this;
     }
 
-    public static VoltskiyaPlugin get() {
+    public static AbstractVoltPlugin get() {
         return instance;
     }
 
