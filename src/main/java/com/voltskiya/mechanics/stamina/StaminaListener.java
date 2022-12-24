@@ -11,14 +11,14 @@ public class StaminaListener implements Listener {
     @EventHandler
     public void onExhaust(EntityExhaustionEvent e) {
         if (e.getEntity() instanceof Player player) {
-            VoltskiyaPlayer voltskiyaPlayer = VoltskiyaPlayer.getPlayer(player);
+            Stamina stamina = VoltskiyaPlayer.getPlayer(player).getStamina();
             switch (e.getExhaustionReason()) {
-                case JUMP_SPRINT -> voltskiyaPlayer.increaseStamina(StaminaConfig.get().getSprintJumpingIncrement());
-                case JUMP -> voltskiyaPlayer.increaseStamina(StaminaConfig.get().getJumpingIncrement());
-                case SWIM -> voltskiyaPlayer.increaseStamina(StaminaConfig.get().getSwimmingIncrement());
-                case SPRINT -> voltskiyaPlayer.increaseStamina(StaminaConfig.get().getSprintingIncrement());
-                case CROUCH -> voltskiyaPlayer.increaseStamina(StaminaConfig.get().getCrouchingIncrement());
-                case WALK, WALK_ON_WATER, WALK_UNDERWATER -> voltskiyaPlayer.increaseStamina(StaminaConfig.get().getWalkingIncrement());
+                case JUMP_SPRINT -> stamina.increaseStamina(StaminaConfig.get().getSprintJumpingIncrement());
+                case JUMP -> stamina.increaseStamina(StaminaConfig.get().getJumpingIncrement());
+                case SWIM -> stamina.increaseStamina(StaminaConfig.get().getSwimmingIncrement());
+                case SPRINT -> stamina.increaseStamina(StaminaConfig.get().getSprintingIncrement());
+                case CROUCH -> stamina.increaseStamina(StaminaConfig.get().getCrouchingIncrement());
+                case WALK, WALK_ON_WATER, WALK_UNDERWATER -> stamina.increaseStamina(StaminaConfig.get().getWalkingIncrement());
             }
         }
     }

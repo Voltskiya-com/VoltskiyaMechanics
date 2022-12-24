@@ -36,7 +36,7 @@ public class ThirstListener implements Listener {
     public void onJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
         player.discoverRecipes(VoltskiyaRecipeManager.getRecipes());
-        VoltskiyaPlayer.join(player).watchAir();
+        VoltskiyaPlayer.join(player).getDisplay().watchAir();
     }
 
     @EventHandler

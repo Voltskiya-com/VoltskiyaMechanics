@@ -36,10 +36,11 @@ public class ThirstCommandACF extends BaseCommand {
             sendPlayerNotFoundError(sender, playerName);
             return;
         }
+        Thirst thirst = VoltskiyaPlayer.getPlayer(player).getThirst();
         if (null == amount)
-            VoltskiyaPlayer.getPlayer(player).resetThirst();
+            thirst.reset();
         else
-            VoltskiyaPlayer.getPlayer(player).drink(amount, false);
+            thirst.drink(amount, false);
 
         sendSuccess(sender, null == playerName ? "Reset your thirst" : String.format("Reset %s's thirst", playerName));
     }
@@ -53,7 +54,7 @@ public class ThirstCommandACF extends BaseCommand {
             sendPlayerNotFoundError(sender, playerName);
             return;
         }
-        boolean isThirsty = VoltskiyaPlayer.getPlayer(player).toggleIsThirsty();
+        boolean isThirsty = VoltskiyaPlayer.getPlayer(player).getThirst().toggleIsThirsty();
         Component onOrOff = isThirsty ? Component.text("on", NamedTextColor.GREEN) : Component.text("off", NamedTextColor.RED);
         sender.sendMessage(null == playerName ? Component.text("Your thirst is now ", NamedTextColor.AQUA).append(onOrOff) : Component.text(String.format("%s's thirst is now ", playerName), NamedTextColor.AQUA).append(onOrOff));
     }

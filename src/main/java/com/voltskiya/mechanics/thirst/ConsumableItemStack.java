@@ -31,13 +31,13 @@ public class ConsumableItemStack extends VoltskiyaItemStack {
         int consumeAmountByKey = getConsumeAmount();
         VoltskiyaPlayer voltskiyaPlayer = VoltskiyaPlayer.getPlayer(player);
         if (-1 != consumeAmountByKey) {
-            voltskiyaPlayer.drink(consumeAmountByKey, isDirty());
+            voltskiyaPlayer.getThirst().drink(consumeAmountByKey, isDirty());
             return decreaseUsesCount(replacement);
         }
         Material material = getItemStack().getType();
         int consumeAmountByMaterial = ThirstConfig.getMaterialConsumeAmount(material);
         if (-1 != consumeAmountByMaterial)
-            voltskiyaPlayer.drink(consumeAmountByMaterial, false);
+            voltskiyaPlayer.getThirst().drink(consumeAmountByMaterial, false);
         return replacement;
     }
 
