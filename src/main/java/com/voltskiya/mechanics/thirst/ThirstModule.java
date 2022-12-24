@@ -3,10 +3,8 @@ package com.voltskiya.mechanics.thirst;
 import com.voltskiya.lib.AbstractModule;
 import com.voltskiya.lib.AbstractVoltPlugin;
 import com.voltskiya.mechanics.Item;
-import com.voltskiya.mechanics.VoltskiyaPlayer;
 import com.voltskiya.mechanics.VoltskiyaRecipeManager;
 import com.voltskiya.mechanics.thirst.config.ThirstConfig;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 
@@ -26,17 +24,13 @@ public class ThirstModule extends AbstractModule {
     }
 
     public void enable() {
-        VoltskiyaPlayer.load();
-        Bukkit.getScheduler().runTaskTimerAsynchronously(getPlugin(), VoltskiyaPlayer::updatePlayers, 0L, 20L);
         getPlugin().registerEvents(new ThirstListener());
         new ThirstCommandACF();
         registerRecipes();
     }
 
     public NamespacedKey getKey(String key) {
-        AbstractVoltPlugin var10000 = getPlugin();
-        String var10001 = getName();
-        return var10000.namespacedKey(var10001 + "." + key);
+        return getPlugin().namespacedKey(getName() + "." + key);
     }
 
     public static NamespacedKey key(String key) {

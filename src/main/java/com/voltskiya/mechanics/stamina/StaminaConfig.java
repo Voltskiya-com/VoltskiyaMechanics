@@ -2,7 +2,7 @@ package com.voltskiya.mechanics.stamina;
 
 public class StaminaConfig {//TODO
 
-    private static StaminaConfig instance;
+    private static final StaminaConfig instance = new StaminaConfig();
 
     public static StaminaConfig get() {
         return instance;
