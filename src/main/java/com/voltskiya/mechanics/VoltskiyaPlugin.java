@@ -18,6 +18,10 @@ public class VoltskiyaPlugin extends AbstractVoltPlugin {
         return instance;
     }
 
+    public void onDisablePost() {
+        VoltskiyaPlayer.save();
+    }
+
     @Override
     public Collection<AbstractModule> getModules() {
         return List.of(new ThirstModule());

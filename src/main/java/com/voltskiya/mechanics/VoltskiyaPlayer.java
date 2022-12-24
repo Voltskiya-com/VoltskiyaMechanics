@@ -1,13 +1,14 @@
 package com.voltskiya.mechanics;
 
+import com.voltskiya.mechanics.stamina.StaminaConfig;
 import com.voltskiya.mechanics.thirst.ThirstModule;
 import com.voltskiya.mechanics.thirst.config.ThirstConfig;
 import lombok.*;
-import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.minecraft.network.protocol.game.ClientboundSetHealthPacket;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.NamespacedKey;
@@ -38,46 +39,75 @@ public class VoltskiyaPlayer {
     private static final Map<Player, VoltskiyaPlayer> players = new HashMap<>();
     public static final int MAX_THIRST = 1000;
     public static final int MIN_THIRST = 0;
-    public static final int CONSUME = 150;
+    public static final int MAX_STAMINA = 10_000;
+    public static final int MIN_STAMINA = 0;
+
     private static final VoltskiyaPlayer.Bar thirstBar = new VoltskiyaPlayer.Bar("\uf003", "\uf004", "\uf005", false);
     private static final VoltskiyaPlayer.Bar staminaBar = new VoltskiyaPlayer.Bar("\uf006", "\uf007", "\uf008", true);
+
     private final Player player;
     private int thirst;
     private boolean isThirsty;
+    private int stamina;
+    private boolean outOfStamina;
 
     public VoltskiyaPlayer(Player player) {
-        this(player, 1000, true);
+        this(player, 1000, true, 1000, false);
     }
 
     private void update() {
-        if (GameMode.SURVIVAL == player.getGameMode() && isThirsty) {
-            if (0 < thirst)
-                thirst = Math.max(0, thirst - ThirstConfig.get().getThirstRate());
+        if (GameMode.SURVIVAL != player.getGameMode())
+            return;
 
-            List<PotionEffect> effectsToAdd = ThirstConfig.get().getPotionEffects(thirst);
-            if (!effectsToAdd.isEmpty())
-                VoltskiyaPlugin.get().scheduleSyncDelayedTask(() -> player.addPotionEffects(effectsToAdd));
+        updateStamina();
+        updateThirst();
+        updateDisplay();
+    }
 
-            updateDisplay();
-        }
+    private void updateStamina() {
+        if (0 == getNMS().walkDistO)
+            increaseStamina(StaminaConfig.get().getStandingStillIncrement());
+    }
+
+    private void updateThirst() {
+        if (!isThirsty)
+            return;
+        if (MIN_THIRST < thirst)
+            thirst = Math.max(MIN_THIRST, thirst - ThirstConfig.get().getThirstRate());
+        List<PotionEffect> effectsToAdd = ThirstConfig.get().getPotionEffects(thirst);
+        if (!effectsToAdd.isEmpty())
+            VoltskiyaPlugin.get().scheduleSyncDelayedTask(() -> player.addPotionEffects(effectsToAdd));
+    }
+
+    public void increaseStamina(int amount) {
+        stamina = Math.max(MIN_STAMINA, Math.min(MAX_STAMINA, stamina + amount));
+        if (MIN_STAMINA == stamina)
+            outOfStamina = true;
+        else if (outOfStamina && StaminaConfig.get().getRunAgainThreshold() < stamina)
+            outOfStamina = false;
     }
 
     private void updateDisplay() {
-        updateDisplay(thirst / (double) MAX_THIRST, 0.67);//TODO
+        updateDisplay(thirst / (double) MAX_THIRST, stamina / (double) MAX_STAMINA);
+    }
+
+    private boolean shouldDisableSprint() {
+        return 100 > thirst || outOfStamina;
     }
 
     public void onSprint() {
-        if (100 > thirst) {//TODO
-            var connection = ((CraftPlayer) player).getHandle().connection;
-            float saturation = player.getSaturation();
-            double health = player.getHealth();
-            connection.send(new ClientboundSetHealthPacket((float)health, 6, saturation));
-            connection.send(new ClientboundSetHealthPacket((float)health, player.getFoodLevel(), saturation));
-        }
+        if (!shouldDisableSprint())
+            return;
+
+        var connection = ((CraftPlayer) player).getHandle().connection;
+        float saturation = player.getSaturation();
+        double health = player.getHealth();
+        connection.send(new ClientboundSetHealthPacket((float)health, 6, saturation));
+        connection.send(new ClientboundSetHealthPacket((float)health, player.getFoodLevel(), saturation));
     }
 
     public void resetThirst() {
-        thirst = 1000;
+        thirst = MAX_THIRST;
     }
 
     public boolean toggleIsThirsty() {
@@ -85,7 +115,8 @@ public class VoltskiyaPlayer {
     }
 
     private void reset() {
-        thirst = 1000;
+        thirst = MAX_THIRST;
+        stamina = MAX_STAMINA;
     }
 
     public void watchAir() {
@@ -94,7 +125,7 @@ public class VoltskiyaPlayer {
         Bukkit.getScheduler().runTaskTimer(VoltskiyaPlugin.get(), () -> {
             double air = player.getRemainingAir() / (double) player.getMaximumAir();
             if (1 == air) bossBar.removePlayer(player);
-            else bossBar.setProgress(Math.max(0.0D, air));
+            else bossBar.setProgress(Math.max(0, air));
         }, 0L, 1L);
     }
 
@@ -115,14 +146,17 @@ public class VoltskiyaPlayer {
         player.sendActionBar(thirstDisplay.append(Component.space()).append(armor).append(Component.space()).append(staminaDisplay));
     }
 
+    private ServerPlayer getNMS() {
+        return ((CraftPlayer) player).getHandle();
+    }
+
     @SneakyThrows
     private void savePlayer() {
         File saveFile = ThirstModule.get().getFile("players", player.getUniqueId() + ".player");
         if (!saveFile.exists()) {
             saveFile.getParentFile().mkdirs();
-            if (!saveFile.createNewFile()) {
+            if (!saveFile.createNewFile())
                 log.error("Unable to create save file for {} ({})", player.getName(), player.getUniqueId());
-            }
         }
 
 
@@ -130,20 +164,22 @@ public class VoltskiyaPlayer {
         FileWriter fileWriter = new FileWriter(saveFile, false);
         fileWriter.write(thirst);
         fileWriter.write(isThirsty ? 1 : 0);
+        fileWriter.write(stamina);
+        fileWriter.write(outOfStamina ? 1 : 0);
     }
 
     @SneakyThrows
     private static VoltskiyaPlayer loadPlayer(Player player) {
         File saveFile = ThirstModule.get().getFile("players", player.getUniqueId() + ".player");
         if (!saveFile.exists()) {
-            VoltskiyaPlayer voltskiyaPlayer = new VoltskiyaPlayer(player, 1000, true);
+            VoltskiyaPlayer voltskiyaPlayer = new VoltskiyaPlayer(player);
             players.put(player, voltskiyaPlayer);
             return voltskiyaPlayer;
         }
         @Cleanup
         FileReader fileReader = new FileReader(saveFile);
         VoltskiyaPlayer var4;
-        VoltskiyaPlayer voltskiyaPlayer = new VoltskiyaPlayer(player, fileReader.read(), 1 == fileReader.read());
+        VoltskiyaPlayer voltskiyaPlayer = new VoltskiyaPlayer(player, fileReader.read(), 1 == fileReader.read(), fileReader.read(), 1 == fileReader.read());
         players.put(player, voltskiyaPlayer);
         fileReader.close();
         return voltskiyaPlayer;
@@ -173,7 +209,7 @@ public class VoltskiyaPlayer {
     public void drink(int consumeAmount, boolean isDirty) {
         if (isDirty)
             player.addPotionEffects(ThirstConfig.get().getDirtyEffects());
-        thirst = Math.max(0, Math.min(1000, thirst + consumeAmount));
+        thirst = Math.max(MIN_THIRST, Math.min(MAX_THIRST, thirst + consumeAmount));
     }
 
     public synchronized void leave() {
