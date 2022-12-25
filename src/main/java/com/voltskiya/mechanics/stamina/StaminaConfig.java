@@ -1,42 +1,54 @@
 package com.voltskiya.mechanics.stamina;
 
-public class StaminaConfig {//TODO
+public class StaminaConfig {
 
-    private static final StaminaConfig instance = new StaminaConfig();
+    private static StaminaConfig instance;
+    public int runAgainThreshold = 300;
+    public int sprintJumpingIncrement = -115;
+    public int jumpingIncrement = -100;
+    public int swimmingIncrement = -15;
+    public int sprintingIncrement = -15;
+    public int crouchingIncrement = 50;
+    public int standingStillIncrement = 30;
+    public int walkingIncrement = 10;
 
     public static StaminaConfig get() {
         return instance;
     }
 
+    public StaminaConfig() {
+        instance = this;
+    }
+
     public int getRunAgainThreshold() {
-        return 300;
+        return runAgainThreshold;
     }
 
     public int getSprintJumpingIncrement() {
-        return -115;
+        return sprintJumpingIncrement;
     }
 
     public int getJumpingIncrement() {
-        return -100;
+        return jumpingIncrement;
     }
 
     public int getSwimmingIncrement() {
-        return -15;
+        return swimmingIncrement;
     }
 
     public int getSprintingIncrement() {
-        return -15;
+        return sprintingIncrement;
     }
 
     public int getCrouchingIncrement() {
-        return 50;
+        return crouchingIncrement;
     }
 
     public int getWalkingIncrement() {
-        return 10;
+        return walkingIncrement;
     }
 
     public int getStandingStillIncrement() {
-        return 30;
+        return standingStillIncrement;
     }
 }
