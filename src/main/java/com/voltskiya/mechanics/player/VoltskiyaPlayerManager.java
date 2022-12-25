@@ -40,8 +40,10 @@ public final class VoltskiyaPlayerManager {
         player = manager.loadFromFolderNow(VoltskiyaPlayer.getSaveFileName(uuid));
         if (player == null)
             player = new VoltskiyaPlayer(bukkitPlayer);
-        player.setPlayer(bukkitPlayer);
-        player.load();
+        else {
+            player.setPlayer(bukkitPlayer);
+            player.load();
+        }
         synchronized (players) {
             players.put(uuid, player);
         }
