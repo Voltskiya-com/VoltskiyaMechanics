@@ -2,7 +2,7 @@ package com.voltskiya.mechanics.thirst;
 
 import com.voltskiya.mechanics.Item;
 import com.voltskiya.mechanics.VoltskiyaItemStack;
-import com.voltskiya.mechanics.VoltskiyaPlayer;
+import com.voltskiya.mechanics.player.VoltskiyaPlayerManager;
 import com.voltskiya.mechanics.VoltskiyaRecipeManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.FluidCollisionMode;
@@ -16,7 +16,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.CauldronLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.RayTraceResult;
@@ -36,34 +41,34 @@ public class ThirstListener implements Listener {
     public void onJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
         player.discoverRecipes(VoltskiyaRecipeManager.getRecipes());
-        VoltskiyaPlayer.join(player).getDisplay().watchAir();
+        VoltskiyaPlayerManager.getPlayer(player);
     }
 
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
-        VoltskiyaPlayer.getPlayer(e.getPlayer()).leave();
+        VoltskiyaPlayerManager.getPlayer(e.getPlayer()).leave();
     }
 
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
-        VoltskiyaPlayer.reset(e.getPlayer());
+        VoltskiyaPlayerManager.getPlayer(e.getPlayer()).reset();
     }
 
     @EventHandler
     public void onSprint(PlayerToggleSprintEvent e) {
-        VoltskiyaPlayer.getPlayer(e.getPlayer()).onSprint();
+        VoltskiyaPlayerManager.getPlayer(e.getPlayer()).onSprint();
     }
 
     @EventHandler
     public void onCauldron(CauldronLevelChangeEvent e) {
+        // todo fill bottle with appropriate amount of clean water
     }
 
     @EventHandler
     public void onChangeGameMode(PlayerGameModeChangeEvent e) {
         GameMode newGameMode = e.getNewGameMode();
-        if (GameMode.CREATIVE == newGameMode || GameMode.SPECTATOR == newGameMode)
+        if (GameMode.SURVIVAL != newGameMode)
             e.getPlayer().sendActionBar(Component.empty());
-
     }
 
     @EventHandler
@@ -82,7 +87,8 @@ public class ThirstListener implements Listener {
         if (!action.isRightClick())
             return;
         Location location = player.getEyeLocation();
-        RayTraceResult raytrace = location.getWorld().rayTraceBlocks(location, location.getDirection(), MAX_REACH_DISTANCE, FluidCollisionMode.SOURCE_ONLY, false);
+        RayTraceResult raytrace = location.getWorld()
+            .rayTraceBlocks(location, location.getDirection(), MAX_REACH_DISTANCE, FluidCollisionMode.SOURCE_ONLY, false);
         if (null == raytrace)
             return;
         Block block = raytrace.getHitBlock();

@@ -2,7 +2,8 @@ package com.voltskiya.mechanics.thirst;
 
 import com.voltskiya.mechanics.Item;
 import com.voltskiya.mechanics.VoltskiyaItemStack;
-import com.voltskiya.mechanics.VoltskiyaPlayer;
+import com.voltskiya.mechanics.player.VoltskiyaPlayer;
+import com.voltskiya.mechanics.player.VoltskiyaPlayerManager;
 import com.voltskiya.mechanics.thirst.config.ThirstConfig;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -29,7 +30,7 @@ public class ConsumableItemStack extends VoltskiyaItemStack {
     @Nullable
     public ItemStack consumeUse(Player player, @Nullable ItemStack replacement) {
         int consumeAmountByKey = getConsumeAmount();
-        VoltskiyaPlayer voltskiyaPlayer = VoltskiyaPlayer.getPlayer(player);
+        VoltskiyaPlayer voltskiyaPlayer = VoltskiyaPlayerManager.getPlayer(player);
         if (-1 != consumeAmountByKey) {
             voltskiyaPlayer.getThirst().drink(consumeAmountByKey, isDirty());
             return decreaseUsesCount(replacement);

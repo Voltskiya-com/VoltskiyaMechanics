@@ -3,7 +3,7 @@ package com.voltskiya.mechanics.thirst;
 import com.voltskiya.lib.acf.BaseCommand;
 import com.voltskiya.lib.acf.annotation.*;
 import com.voltskiya.mechanics.Item;
-import com.voltskiya.mechanics.VoltskiyaPlayer;
+import com.voltskiya.mechanics.player.VoltskiyaPlayerManager;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -36,7 +36,7 @@ public class ThirstCommandACF extends BaseCommand {
             sendPlayerNotFoundError(sender, playerName);
             return;
         }
-        Thirst thirst = VoltskiyaPlayer.getPlayer(player).getThirst();
+        Thirst thirst = VoltskiyaPlayerManager.getPlayer(player).getThirst();
         if (null == amount)
             thirst.reset();
         else
@@ -54,7 +54,7 @@ public class ThirstCommandACF extends BaseCommand {
             sendPlayerNotFoundError(sender, playerName);
             return;
         }
-        boolean isThirsty = VoltskiyaPlayer.getPlayer(player).getThirst().toggleIsThirsty();
+        boolean isThirsty = VoltskiyaPlayerManager.getPlayer(player).getThirst().toggleIsThirsty();
         Component onOrOff = isThirsty ? Component.text("on", NamedTextColor.GREEN) : Component.text("off", NamedTextColor.RED);
         sender.sendMessage(null == playerName ? Component.text("Your thirst is now ", NamedTextColor.AQUA).append(onOrOff) : Component.text(String.format("%s's thirst is now ", playerName), NamedTextColor.AQUA).append(onOrOff));
     }

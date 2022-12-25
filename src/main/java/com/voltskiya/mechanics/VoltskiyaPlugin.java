@@ -2,12 +2,12 @@ package com.voltskiya.mechanics;
 
 import com.voltskiya.lib.AbstractModule;
 import com.voltskiya.lib.AbstractVoltPlugin;
+import com.voltskiya.mechanics.player.VoltskiyaPlayerManager;
 import com.voltskiya.mechanics.stamina.StaminaModule;
 import com.voltskiya.mechanics.thirst.ThirstModule;
-import org.bukkit.Bukkit;
-
 import java.util.Collection;
 import java.util.List;
+import org.bukkit.Bukkit;
 
 public class VoltskiyaPlugin extends AbstractVoltPlugin {
 
@@ -22,12 +22,14 @@ public class VoltskiyaPlugin extends AbstractVoltPlugin {
     }
 
     public void onDisablePost() {
-        VoltskiyaPlayer.save();
+        VoltskiyaPlayerManager.saveNow();
     }
 
     public void initialize() {
-        VoltskiyaPlayer.load();
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, VoltskiyaPlayer::updatePlayers, 0L, 20L);
+        VoltskiyaPlayerManager.load();
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, VoltskiyaPlayerManager::updatePlayers, 0L, 20L);
+        // save all online players occasionally
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, VoltskiyaPlayerManager::save, 400L, 400L);
     }
 
     @Override
