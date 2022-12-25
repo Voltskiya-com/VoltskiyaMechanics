@@ -4,9 +4,9 @@ import apple.utilities.database.SaveFileable;
 import com.voltskiya.mechanics.Display;
 import com.voltskiya.mechanics.stamina.Stamina;
 import com.voltskiya.mechanics.thirst.Thirst;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.minecraft.network.protocol.game.ClientboundSetHealthPacket;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.GameMode;
@@ -14,33 +14,34 @@ import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.UUID;
+
 @NoArgsConstructor // for gson
-@Getter
 public class VoltskiyaPlayer implements SaveFileable {
 
-    private PlayerSerialized player;
-    private Display display;
+    @Setter
+    @Getter
+    private transient Player player;
+    private transient Display display = new Display();
 
     private Thirst thirst;
+    @Getter
     private Stamina stamina;
 
     public VoltskiyaPlayer(@NotNull Player player) {
-        this.player = new PlayerSerialized(player);
-        this.thirst = new Thirst();
-        this.stamina = new Stamina();
-        this.display = new Display();
-        this.load();
+        this.player = player;
+        thirst = new Thirst();
+        stamina = new Stamina();
+        load();
     }
 
-    private void load() {
-        this.thirst.load(this);
-        this.stamina.load(this);
-        this.display.load(this);
+    void load() {
+        thirst.load(this);
+        stamina.load(this);
+        display.load(this);
     }
 
     public void update() {
-        Player player = this.player.getPlayer();
-        if (player == null) return;
         if (GameMode.SURVIVAL != player.getGameMode()) return;
         stamina.updateStamina();
         thirst.updateThirst();
@@ -49,9 +50,6 @@ public class VoltskiyaPlayer implements SaveFileable {
 
     public void onSprint() {
         if (!thirst.shouldDisableSprint() || stamina.shouldDisableSprint()) return;
-
-        Player player = this.player.getPlayer();
-        if (player == null) return;
         ServerGamePacketListenerImpl connection = ((CraftPlayer) player).getHandle().connection;
         float saturation = player.getSaturation();
         double health = player.getHealth();
@@ -66,17 +64,16 @@ public class VoltskiyaPlayer implements SaveFileable {
 
 
     public void leave() {
-        this.display.leave();
-        VoltskiyaPlayerManager.remove(player.uuid());
+        display.cancelTask();
+        VoltskiyaPlayerManager.remove(player.getUniqueId());
     }
 
     @Override
     public String getSaveFileName() {
-        return getSaveFileName(player.uuid());
+        return getSaveFileName(player.getUniqueId());
     }
 
     public static String getSaveFileName(UUID uuid) {
         return uuid.toString() + ".player.json";
     }
-
 }

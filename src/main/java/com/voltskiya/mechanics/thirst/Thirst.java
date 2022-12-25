@@ -1,7 +1,6 @@
 package com.voltskiya.mechanics.thirst;
 
 import com.voltskiya.mechanics.VoltskiyaPlugin;
-import com.voltskiya.mechanics.player.HasVoltPlayer;
 import com.voltskiya.mechanics.player.VoltskiyaPlayer;
 import com.voltskiya.mechanics.thirst.config.ThirstConfig;
 import java.util.List;
@@ -21,7 +20,7 @@ public class Thirst implements HasVoltPlayer {
     private boolean isThirsty = true;
 
     public void load(VoltskiyaPlayer volt) {
-        this.voltPlayer = volt;
+        voltPlayer = volt;
     }
 
     public void updateThirst() {
@@ -53,11 +52,6 @@ public class Thirst implements HasVoltPlayer {
     }
 
     public boolean shouldDisableSprint() {
-        return 100 > thirst;
-    }
-
-    @Override
-    public VoltskiyaPlayer getVolt() {
-        return this.voltPlayer;
+        return 100 > thirst;//TODO add to config
     }
 }

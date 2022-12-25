@@ -8,10 +8,13 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-
-public class VoltskiyaPlayerManager {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class VoltskiyaPlayerManager {
 
     private static final Map<UUID, VoltskiyaPlayer> players = new HashMap<>();
     private static AppleAJDTyped<VoltskiyaPlayer> manager;
@@ -32,9 +35,13 @@ public class VoltskiyaPlayerManager {
         synchronized (players) {
             player = players.get(uuid);
         }
-        if (player != null) return player;
+        if (player != null)
+            return player;
         player = manager.loadFromFolderNow(VoltskiyaPlayer.getSaveFileName(uuid));
-        if (player == null) player = new VoltskiyaPlayer(bukkitPlayer);
+        if (player == null)
+            player = new VoltskiyaPlayer(bukkitPlayer);
+        player.setPlayer(bukkitPlayer);
+        player.load();
         synchronized (players) {
             players.put(uuid, player);
         }
@@ -53,7 +60,7 @@ public class VoltskiyaPlayerManager {
         }
     }
 
-    public static synchronized void saveNow() {
+    public static void saveNow() {
         synchronized (players) {
             players.values().forEach(manager::saveInFolderNow);
         }

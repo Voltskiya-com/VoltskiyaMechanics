@@ -1,6 +1,5 @@
 package com.voltskiya.mechanics;
 
-import com.voltskiya.mechanics.player.HasVoltPlayer;
 import com.voltskiya.mechanics.player.VoltskiyaPlayer;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -15,18 +14,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 @Getter
-public class Display implements HasVoltPlayer {
+public class Display {
 
     private static final Bar thirstBar = new Bar("\uf003", "\uf004", "\uf005", false);
     private static final Bar staminaBar = new Bar("\uf006", "\uf007", "\uf008", true);
 
-    private transient VoltskiyaPlayer voltPlayer;
-    private transient BukkitTask updateAirTask;
-    private transient BossBar bossBarAir;
+    private Player player;
+    private BukkitTask updateAirTask;
+    private BossBar bossBarAir = Bukkit.createBossBar("Air", BarColor.BLUE, BarStyle.SOLID);
 
     public void updateDisplay(double thirstPercentage, double staminaPercentage) {
-        Player player = player().getPlayer();
-        if (player == null) return;
         AttributeInstance armorAttribute = player.getAttribute(Attribute.GENERIC_ARMOR);
         int armorValue = null == armorAttribute ? 0 : (int) armorAttribute.getValue();
         StringBuilder armorStr = new StringBuilder();
@@ -44,20 +41,8 @@ public class Display implements HasVoltPlayer {
     }
 
     public void load(VoltskiyaPlayer voltPlayer) {
-        this.voltPlayer = voltPlayer;
-
-        Player player = this.player().getPlayer();
-        if (player == null) return;
-
-        this.bossBarAir = Bukkit.createBossBar("Air", BarColor.BLUE, BarStyle.SOLID);
-        this.bossBarAir.addPlayer(player);
-
-        this.updateAirTask = Bukkit.getScheduler().runTaskTimer(VoltskiyaPlugin.get(), this::updateAir, 0L, 1L);
-    }
-
-    @Override
-    public VoltskiyaPlayer getVolt() {
-        return this.voltPlayer;
+        bossBarAir.addPlayer(player = voltPlayer.getPlayer());
+        updateAirTask = Bukkit.getScheduler().runTaskTimer(VoltskiyaPlugin.get(), this::updateAir, 0L, 1L);
     }
 
     private record Bar(String emptyChar, String halfChar, String fullChar, boolean isReversed) {
@@ -75,21 +60,12 @@ public class Display implements HasVoltPlayer {
     }
 
     private void updateAir() {
-        Player player = this.player().getPlayer();
-        if (player == null) {
-            leave();
-            return;
-        }
         double air = player.getRemainingAir() / (double) player.getMaximumAir();
         if (1 == air) bossBarAir.removePlayer(player);
         else bossBarAir.setProgress(Math.max(0, air));
     }
 
-    public synchronized void leave() {
-        if (this.updateAirTask != null) {
-            this.updateAirTask.cancel();
-            this.updateAirTask = null;
-        }
+    public void cancelTask() {
+        updateAirTask.cancel();
     }
-
 }

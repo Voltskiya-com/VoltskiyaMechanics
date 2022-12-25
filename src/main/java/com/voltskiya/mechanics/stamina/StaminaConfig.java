@@ -1,8 +1,14 @@
 package com.voltskiya.mechanics.stamina;
 
-public class StaminaConfig {
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-    private static StaminaConfig instance;
+@Getter
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class StaminaConfig {
+
+    private static final StaminaConfig instance = new StaminaConfig();
     public int runAgainThreshold = 300;
     public int sprintJumpingIncrement = -115;
     public int jumpingIncrement = -100;
@@ -16,39 +22,4 @@ public class StaminaConfig {
         return instance;
     }
 
-    public StaminaConfig() {
-        instance = this;
-    }
-
-    public int getRunAgainThreshold() {
-        return runAgainThreshold;
-    }
-
-    public int getSprintJumpingIncrement() {
-        return sprintJumpingIncrement;
-    }
-
-    public int getJumpingIncrement() {
-        return jumpingIncrement;
-    }
-
-    public int getSwimmingIncrement() {
-        return swimmingIncrement;
-    }
-
-    public int getSprintingIncrement() {
-        return sprintingIncrement;
-    }
-
-    public int getCrouchingIncrement() {
-        return crouchingIncrement;
-    }
-
-    public int getWalkingIncrement() {
-        return walkingIncrement;
-    }
-
-    public int getStandingStillIncrement() {
-        return standingStillIncrement;
-    }
 }
