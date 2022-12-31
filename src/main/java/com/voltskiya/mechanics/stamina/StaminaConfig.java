@@ -1,11 +1,8 @@
 package com.voltskiya.mechanics.stamina;
 
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class StaminaConfig {
 
     private static final StaminaConfig instance = new StaminaConfig();

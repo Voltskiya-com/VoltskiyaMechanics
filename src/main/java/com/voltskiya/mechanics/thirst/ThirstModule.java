@@ -46,7 +46,7 @@ public class ThirstModule extends AbstractModule {
         VoltskiyaRecipeManager.shaped(key("filtered_canteen"), Item.FILTERED_CANTEEN_EMPTY, new String[]{"ISI", "LSL", "LLL"}, new VoltskiyaRecipeManager.IngredientMapping('I', Material.IRON_INGOT), new VoltskiyaRecipeManager.IngredientMapping('I', Material.IRON_INGOT), new VoltskiyaRecipeManager.IngredientMapping('S', Material.STRING));
         VoltskiyaRecipeManager.shapeless(key("simple_bottle"), Item.SIMPLE_BOTTLE_EMPTY, new VoltskiyaRecipeManager.IngredientChoice(Material.LEATHER));
         VoltskiyaRecipeManager.furnace(key("canteen_purified"), Item.CANTEEN_FULL.toItemStack(), Item.CANTEEN_DIRTY);
-        VoltskiyaRecipeManager.furnace(key("bottle_purified"), ConsumableItemStack.getWaterBottle(), Item.BOTTLE_DIRTY);
+        VoltskiyaRecipeManager.furnace(key("bottle_purified"), Item.getWaterBottle(), Item.BOTTLE_DIRTY);
         VoltskiyaRecipeManager.furnace(key("simple_bottle_purified"), Item.SIMPLE_BOTTLE_FULL.toItemStack(), Item.SIMPLE_BOTTLE_DIRTY);
     }
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 
 public class VoltskiyaPlugin extends AbstractVoltPlugin {
+    private static final int TICKS_PER_SECOND = 20;
 
     private static AbstractVoltPlugin instance;
 
@@ -27,9 +28,11 @@ public class VoltskiyaPlugin extends AbstractVoltPlugin {
 
     public void initialize() {
         VoltskiyaPlayerManager.load();
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, VoltskiyaPlayerManager::updatePlayers, 0L, 20L);
+        Bukkit.getScheduler().runTaskTimer(this, VoltskiyaPlayerManager::tickPlayers, 0, TICKS_PER_SECOND);
         // save all online players occasionally
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, VoltskiyaPlayerManager::save, 400L, 400L);
+        Bukkit.getScheduler().runTaskTimer(this, VoltskiyaPlayerManager::save, 20 * TICKS_PER_SECOND, 20 * TICKS_PER_SECOND);
+
+        Bukkit.getPluginManager().registerEvents(new VoltskiyaListener(), this);
     }
 
     @Override

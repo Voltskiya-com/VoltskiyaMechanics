@@ -1,37 +1,43 @@
 package com.voltskiya.mechanics.stamina;
 
 import com.voltskiya.mechanics.player.VoltskiyaPlayer;
-import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
-import org.bukkit.entity.Player;
+import org.bukkit.Location;
 
 public class Stamina {
 
     public static final int MAX_STAMINA = 10_000;
     public static final int MIN_STAMINA = 0;
 
-    private transient Player player;
+    private transient VoltskiyaPlayer player;
+    private transient Location lastLocation;
 
     private int stamina = MAX_STAMINA;
     private boolean outOfStamina;
 
     public void increaseStamina(int amount) {
         stamina = Math.max(MIN_STAMINA, Math.min(MAX_STAMINA, stamina + amount));
-        if (MIN_STAMINA == stamina)
+        if (MIN_STAMINA == stamina) {
             outOfStamina = true;
+            if (player.getPlayer().isSprinting())
+                player.onSprint();
+        }
         else if (outOfStamina && StaminaConfig.get().getRunAgainThreshold() < stamina)
             outOfStamina = false;
     }
 
-    public void load(VoltskiyaPlayer voltPlayer) {
-        player = voltPlayer.getPlayer();
+    public void onLoad(VoltskiyaPlayer player) {
+        this.player = player;
+        lastLocation = player.getPlayer().getLocation();
     }
 
-    public void updateStamina() {
-        if (0 == ((CraftPlayer) player).getHandle().walkDistO)
+    public void onTick() {
+        Location location = player.getPlayer().getLocation();
+        if (0 == location.distanceSquared(lastLocation))
             increaseStamina(StaminaConfig.get().getStandingStillIncrement());
+        lastLocation = location;
     }
 
-    public void reset() {
+    public void onDeath() {
         stamina = MAX_STAMINA;
         outOfStamina = false;
     }

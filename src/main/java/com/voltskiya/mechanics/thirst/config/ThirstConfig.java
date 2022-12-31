@@ -3,14 +3,9 @@ package com.voltskiya.mechanics.thirst.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.voltskiya.mechanics.Item;
+import com.voltskiya.mechanics.VoltskiyaItemStack;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import com.voltskiya.mechanics.thirst.ThirstModule;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.*;
-
 import lombok.Cleanup;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -21,13 +16,19 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
+
 @Getter
 public class ThirstConfig {
     private final List<ThirstEffect> thirstyEffects = new ArrayList<>();
     private final Map<String, ThirstConfig.ConsumableItemConfig> consumables = new HashMap<>();
     private final Map<Material, Integer> defaultConsumables = new EnumMap<>(Material.class);
     private final List<DirtyWaterPotionEffect> dirtyWaterEffects = new ArrayList<>();
-    private final int thirstRate = 1;
+    private int thirstRate = 1;
     private static ThirstConfig instance;
 
     public static ThirstConfig get() {
@@ -40,8 +41,6 @@ public class ThirstConfig {
             FileReader reader = new FileReader(getFile());
 
             instance = gson().fromJson(reader, ThirstConfig.class);
-
-            reader.close();
         } catch (IOException ignored) {
             instance = new ThirstConfig();
             instance.getDefaultConsumables().put(Material.POTION, 300);
@@ -74,8 +73,16 @@ public class ThirstConfig {
 
     }
 
+    public static ConsumableItemConfig get(Item item) {
+        return get().getConsumables().get(item.getId());
+    }
+
     public List<PotionEffect> getPotionEffects(int thirstLevel) {
-        return getThirstyEffects().stream().filter(effect -> effect.shouldActivate(thirstLevel)).map(ThirstEffect::potion).toList();
+        return getThirstyEffects()
+                .stream()
+                .filter(effect -> effect.shouldActivate(thirstLevel))
+                .map(ThirstEffect::potion)
+                .toList();
     }
 
     public int getThirstRate() {
@@ -100,28 +107,36 @@ public class ThirstConfig {
         return getDirtyWaterEffects().stream().map(DirtyWaterPotionEffect::potion).toList();
     }
 
+    @Getter
     public static class ConsumableItemConfig extends Item.ItemConfig {
-        public static final NamespacedKey USES_KEY = VoltskiyaPlugin.get().namespacedKey("thirst.consumable.used_count");
-        public static final NamespacedKey CONSUME_AMOUNT_KEY = VoltskiyaPlugin.get().namespacedKey("thirst.consumable.consume_amount");
-        private final int uses;
-        private final int consumeAmount;
+        private static final NamespacedKey USES_KEY = VoltskiyaPlugin.get().namespacedKey("thirst.consumable.used_count");
+        private int uses = 1;
+        private int consumeAmount = 300;
 
-        public ConsumableItemConfig(int texture, Component name, List<Component> lore, int uses, int consumeAmount) {
-            super(texture, name, lore);
+        public ConsumableItemConfig(String id, int texture, Component name, List<Component> lore, int uses, int consumeAmount) {
+            super(id, texture, name, lore);
             this.uses = uses;
             this.consumeAmount = consumeAmount;
         }
 
         public static ThirstConfig.ConsumableItemConfig createDefault(String id, boolean isDirty, int uses) {
-            return new ThirstConfig.ConsumableItemConfig(0, Component.text(id), Collections.emptyList(), uses, isDirty ? -100 : 300);
+            return new ThirstConfig.ConsumableItemConfig(id, 0, Component.text(id), Collections.emptyList(), uses, isDirty ? -100 : 300);
         }
 
         public Item.Tag<?, ?>[] getTags() {
-            return new Item.Tag[]{new Item.Tag<>(USES_KEY, PersistentDataType.INTEGER, uses), new Item.Tag<>(CONSUME_AMOUNT_KEY, PersistentDataType.INTEGER, consumeAmount)};
+            return new Item.Tag[]{new Item.Tag<>(USES_KEY, PersistentDataType.INTEGER, uses)};
         }
 
         public int getConsumeAmount() {
             return consumeAmount;
+        }
+
+        public static int getUses(VoltskiyaItemStack itemStack) {
+            return itemStack.getKeyOrDefault(USES_KEY, PersistentDataType.INTEGER, 0);
+        }
+
+        public static void setUses(VoltskiyaItemStack itemStack, int uses) {
+            itemStack.setKey(USES_KEY, PersistentDataType.INTEGER, uses);
         }
     }
 }

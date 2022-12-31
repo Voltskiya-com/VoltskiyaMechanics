@@ -40,8 +40,8 @@ public class Display {
         player.sendActionBar(thirstDisplay.append(Component.space()).append(armor).append(Component.space()).append(staminaDisplay));
     }
 
-    public void load(VoltskiyaPlayer voltPlayer) {
-        bossBarAir.addPlayer(player = voltPlayer.getPlayer());
+    public void onLoad(Player player) {
+        this.player = player;
         updateAirTask = Bukkit.getScheduler().runTaskTimer(VoltskiyaPlugin.get(), this::updateAir, 0L, 1L);
     }
 
@@ -62,7 +62,10 @@ public class Display {
     private void updateAir() {
         double air = player.getRemainingAir() / (double) player.getMaximumAir();
         if (1 == air) bossBarAir.removePlayer(player);
-        else bossBarAir.setProgress(Math.max(0, air));
+        else {
+            bossBarAir.addPlayer(player);
+            bossBarAir.setProgress(Math.max(0, air));
+        }
     }
 
     public void cancelTask() {

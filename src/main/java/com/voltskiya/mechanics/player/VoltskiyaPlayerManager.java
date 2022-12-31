@@ -37,13 +37,12 @@ public final class VoltskiyaPlayerManager {
         }
         if (player != null)
             return player;
+
         player = manager.loadFromFolderNow(VoltskiyaPlayer.getSaveFileName(uuid));
         if (player == null)
             player = new VoltskiyaPlayer(bukkitPlayer);
-        else {
-            player.setPlayer(bukkitPlayer);
-            player.load();
-        }
+        else
+            player.onLoad(bukkitPlayer);
         synchronized (players) {
             players.put(uuid, player);
         }
@@ -56,9 +55,9 @@ public final class VoltskiyaPlayerManager {
         Bukkit.getOnlinePlayers().forEach(VoltskiyaPlayerManager::getPlayer);
     }
 
-    public static void updatePlayers() {
+    public static void tickPlayers() {
         synchronized (players) {
-            players.values().forEach(VoltskiyaPlayer::update);
+            players.values().forEach(VoltskiyaPlayer::onTick);
         }
     }
 

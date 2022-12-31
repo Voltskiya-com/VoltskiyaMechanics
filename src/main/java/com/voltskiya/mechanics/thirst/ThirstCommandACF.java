@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 @CommandAlias("thirst")
 public class ThirstCommandACF extends BaseCommand {
@@ -36,12 +37,7 @@ public class ThirstCommandACF extends BaseCommand {
             sendPlayerNotFoundError(sender, playerName);
             return;
         }
-        Thirst thirst = VoltskiyaPlayerManager.getPlayer(player).getThirst();
-        if (null == amount)
-            thirst.reset();
-        else
-            thirst.drink(amount, false);
-
+        VoltskiyaPlayerManager.getPlayer(player).getThirst().drink(Objects.requireNonNullElse(amount, Thirst.MAX_THIRST));
         sendSuccess(sender, null == playerName ? "Reset your thirst" : String.format("Reset %s's thirst", playerName));
     }
 
