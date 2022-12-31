@@ -6,7 +6,6 @@ import com.voltskiya.mechanics.VoltskiyaPlugin;
 import com.voltskiya.mechanics.thirst.config.ThirstConfig;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -76,7 +75,6 @@ public class Thirst {
     }
 
     public void drink(int consumeAmount) {
-        player.sendMessage(Component.text("drink %d".formatted(consumeAmount)));
         thirst = Math.max(MIN_THIRST, Math.min(MAX_THIRST, thirst + consumeAmount));
     }
 
