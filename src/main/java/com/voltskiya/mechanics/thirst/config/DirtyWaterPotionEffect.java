@@ -27,12 +27,12 @@ public class DirtyWaterPotionEffect {
 
     @NotNull
     public PotionEffect potion() {
-        PotionEffectType effectType = PotionEffectType.getByKey(NamespacedKey.fromString(this.potion));
+        PotionEffectType effectType = PotionEffectType.getByKey(NamespacedKey.fromString(potion));
         if (null == effectType) {
-            VoltskiyaPlugin.get().getSLF4JLogger().error(String.format("%s is not a valid PotionEffectType in Thirst.DirtyWaterEffect", this.potion));
+            VoltskiyaPlugin.get().getSLF4JLogger().error(String.format("%s is not a valid PotionEffectType in Thirst.DirtyWaterEffect", potion));
             return new PotionEffect(Map.of());
         } else {
-            return new PotionEffect(effectType, this.duration, this.amplifier);
+            return new PotionEffect(effectType, duration, amplifier);
         }
     }
 }

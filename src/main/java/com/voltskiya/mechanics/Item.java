@@ -12,13 +12,17 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.NotNull;
 
+@Getter
 public enum Item {
-    UNKNOWN(Material.AIR, new Item.ItemConfig(-1, Component.empty(), Collections.emptyList()) {
+    UNKNOWN(Material.AIR, new Item.ItemConfig("", -1, Component.empty(), Collections.emptyList()) {
         public Item.Tag<?, ?>[] getTags() {
             return new Item.Tag[0];
         }
@@ -34,6 +38,7 @@ public enum Item {
     BOTTLE_DIRTY(Material.POTION, ThirstConfig.compute("bottle_dirty", true, 1));
 
     private final Material material;
+    private final String id;
     private final int texture;
     private final Item.Tag<?, ?>[] tags;
     private final Component displayName;
@@ -42,6 +47,7 @@ public enum Item {
 
     Item(Material material, Item.ItemConfig config) {
         this.material = material;
+        id = config.getId();
         texture = config.getTexture();
         tags = config.getTags();
         displayName = config.getName();
@@ -90,9 +96,24 @@ public enum Item {
         itemStack.setItemMeta(itemMeta);
     }
 
+    public boolean isDirty() {
+        return CANTEEN_DIRTY == this || SIMPLE_BOTTLE_DIRTY == this || BOTTLE_DIRTY == this;
+    }
+
+    public static ItemStack getWaterBottle() {
+        ItemStack waterBottle = new ItemStack(Material.POTION);
+        PotionMeta pmeta = (PotionMeta) waterBottle.getItemMeta();
+        PotionData pdata = new PotionData(PotionType.WATER);
+        pmeta.setBasePotionData(pdata);
+        waterBottle.setItemMeta(pmeta);
+        return waterBottle;
+    }
+
     @AllArgsConstructor
     @Getter
     public abstract static class ItemConfig {
+
+        private final String id;
         private final int texture;
         private final Component name;
         private final List<Component> lore;
