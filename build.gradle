@@ -5,19 +5,22 @@ plugins {
 }
 
 repositories {
-    maven { url "https://reposilite.appleptr16.com/appleptr16" }
+    mavenLocal()
+    mavenCentral()
+
     maven { url 'https://papermc.io/repo/repository/maven-public/' }
     maven { url 'https://repo.aikar.co/content/groups/aikar/' }
-    mavenCentral()
-    mavenLocal()
+
+    maven { url "https://reposilite.appleptr16.com/appleptr16" }
     maven {
         name 'CodeMC'
         url 'https://repo.codemc.org/repository/maven-public/'
     }
     maven {
-        name = 'sonatype'
-        url = 'https://oss.sonatype.org/content/groups/public/'
+        name 'sonatype'
+        url 'https://oss.sonatype.org/content/groups/public/'
     }
+    maven { url "https://maven.enginehub.org/repo/" }
 }
 
 
@@ -31,27 +34,33 @@ project.group groupValue
 project.version versionValue
 
 configurations {
-    all {
+    configureEach {
         resolutionStrategy.cacheDynamicVersionsFor 1, 'seconds'
         resolutionStrategy.cacheChangingModulesFor 1, 'seconds'
     }
 }
 
 dependencies {
-    compileOnly 'mc.pmc:VoltPluginManager:3.2-SNAPSHOT'
+    // voltskiya
+    compileOnly 'mc.pmc:voltpluginmanager:3.2-SNAPSHOT'
+    compileOnly 'mc.apple:AppleMCUtil:1.0-SNAPSHOT'
     compileOnly 'voltskiya.utilities:VoltskiyaUtilities:2.0-SNAPSHOT'
 
-    compileOnly 'io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT'
 
     implementation 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
 
-    compileOnly 'org.spigotmc:spigot:1.19.2-R0.1-SNAPSHOT:remapped-mojang'
+    // other plugins
+    compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.8-SNAPSHOT'
+
+    // minecraft
+    compileOnly 'io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot:1.19.4-R0.1-SNAPSHOT:remapped-mojang'
 }
 
 shadowJar.classifier ''
 remap {
-    version.set '1.19.2'
+    version.set '1.19.4'
     dependsOn(shadowJar)
     doLast {
         copy {

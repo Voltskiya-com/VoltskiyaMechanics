@@ -6,19 +6,24 @@ import java.util.List;
 import org.bukkit.NamespacedKey;
 
 public class StaminaModule extends AbstractModule {
-    private static StaminaModule instance;
 
-    public static StaminaModule get() {
-        return instance;
-    }
+    private static StaminaModule instance;
 
     public StaminaModule() {
         instance = this;
     }
 
+    public static StaminaModule get() {
+        return instance;
+    }
+
+    public static NamespacedKey key(String key) {
+        return get().getKey(key);
+    }
+
     @Override
     public void enable() {
-        getPlugin().registerEvents(new StaminaListener());
+        new StaminaListener();
     }
 
     @Override
@@ -28,14 +33,10 @@ public class StaminaModule extends AbstractModule {
 
     @Override
     public List<AppleConfigLike> getConfigs() {
-        return List.of(configJson(StaminaConfig.class,"StaminaConfig"));
+        return List.of(configJson(StaminaConfig.class, "StaminaConfig"));
     }
 
     public NamespacedKey getKey(String key) {
         return getPlugin().namespacedKey(getName() + "." + key);
-    }
-
-    public static NamespacedKey key(String key) {
-        return get().getKey(key);
     }
 }

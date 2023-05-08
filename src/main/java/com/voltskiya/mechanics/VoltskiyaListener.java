@@ -7,7 +7,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class VoltskiyaListener implements Listener {
@@ -20,12 +23,6 @@ public class VoltskiyaListener implements Listener {
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
         VoltskiyaPlayerManager.getPlayer(e.getPlayer()).onDeath();
-    }
-
-    @EventHandler
-    public void onSprint(PlayerToggleSprintEvent e) {
-        if(e.isSprinting())
-            VoltskiyaPlayerManager.getPlayer(e.getPlayer()).onSprint();
     }
 
     @EventHandler
@@ -43,7 +40,8 @@ public class VoltskiyaListener implements Listener {
 
     @EventHandler
     public void onConsume(PlayerItemConsumeEvent e) {
-        ItemStack replacement = VoltskiyaPlayerManager.getPlayer(e.getPlayer()).onConsume(new VoltskiyaItemStack(e.getItem()), e.getReplacement());
+        ItemStack replacement = VoltskiyaPlayerManager.getPlayer(e.getPlayer())
+            .onConsume(new VoltskiyaItemStack(e.getItem()), e.getReplacement());
         e.setReplacement(replacement);
     }
 

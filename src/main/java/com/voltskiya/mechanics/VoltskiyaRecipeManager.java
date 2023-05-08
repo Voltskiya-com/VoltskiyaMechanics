@@ -4,15 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
+import net.minecraft.world.item.crafting.CookingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.craftbukkit.v1_19_R1.CraftServer;
-import org.bukkit.craftbukkit.v1_19_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_19_R1.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.v1_19_R3.CraftServer;
+import org.bukkit.craftbukkit.v1_19_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_19_R3.util.CraftNamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
@@ -50,7 +51,7 @@ public class VoltskiyaRecipeManager {
         recipes.add(key);
         Ingredient ingredient = new Ingredient(List.of(new Ingredient.ItemValue(CraftItemStack.asNMSCopy(input.toItemStack()))).stream());
         ingredient.exact = true;
-        SmeltingRecipe smeltingRecipe = new SmeltingRecipe(CraftNamespacedKey.toMinecraft(key), "", ingredient, CraftItemStack.asNMSCopy(result), 0.0F, 100);
+        SmeltingRecipe smeltingRecipe = new SmeltingRecipe(CraftNamespacedKey.toMinecraft(key), "", CookingBookCategory.FOOD, ingredient, CraftItemStack.asNMSCopy(result), 0.0F, 100);
         getRecipeManager().addRecipe(smeltingRecipe);
     }
 

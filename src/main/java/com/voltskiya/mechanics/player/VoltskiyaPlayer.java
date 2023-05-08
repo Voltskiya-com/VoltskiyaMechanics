@@ -5,26 +5,20 @@ import com.voltskiya.mechanics.Display;
 import com.voltskiya.mechanics.VoltskiyaItemStack;
 import com.voltskiya.mechanics.stamina.Stamina;
 import com.voltskiya.mechanics.thirst.Thirst;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.kyori.adventure.text.Component;
-import net.minecraft.network.protocol.game.ClientboundSetHealthPacket;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.GameMode;
-import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.UUID;
 
 @NoArgsConstructor // for gson
 @Getter
 public class VoltskiyaPlayer implements SaveFileable {
 
-    private transient Player player;
     private final transient Display display = new Display();
-
+    private transient Player player;
     private Thirst thirst;
     private Stamina stamina;
 
@@ -32,6 +26,10 @@ public class VoltskiyaPlayer implements SaveFileable {
         thirst = new Thirst();
         stamina = new Stamina();
         onLoad(player);
+    }
+
+    public static String getSaveFileName(UUID uuid) {
+        return uuid.toString() + ".player.json";
     }
 
     void onLoad(Player player) {
@@ -48,20 +46,17 @@ public class VoltskiyaPlayer implements SaveFileable {
         display.updateDisplay(thirst.getThirstPercentage(), stamina.getStaminaPercentage());
     }
 
-    public void onSprint() {
-        if (!thirst.shouldDisableSprint() || !stamina.shouldDisableSprint()) return;
-        ServerGamePacketListenerImpl connection = ((CraftPlayer) player).getHandle().connection;
-        float saturation = player.getSaturation();
-        double health = player.getHealth();
-        connection.send(new ClientboundSetHealthPacket((float) health, 6, saturation));
-        connection.send(new ClientboundSetHealthPacket((float) health, player.getFoodLevel(), saturation));
+    public void verifySprint() {
+        if (!stamina.isLowSprint()) return;
+        Player player = this.player.getPlayer();
+        if (player != null)
+            player.addPotionEffect(Stamina.LOW_SPRINT_EFFECT);
     }
 
     public void onDeath() {
         thirst.onDeath();
         stamina.onDeath();
     }
-
 
     public void onLeave() {
         display.cancelTask();
@@ -71,10 +66,6 @@ public class VoltskiyaPlayer implements SaveFileable {
     @Override
     public String getSaveFileName() {
         return getSaveFileName(player.getUniqueId());
-    }
-
-    public static String getSaveFileName(UUID uuid) {
-        return uuid.toString() + ".player.json";
     }
 
     public ItemStack onConsume(VoltskiyaItemStack itemStack, ItemStack replacement) {

@@ -23,6 +23,7 @@ public class ThirstCommandACF extends BaseCommand {
     }
 
     @Subcommand("give")
+    @CommandPermission("volt.thirst.give")
     @CommandCompletion("@volt_items")
     public void give(Player player, @Name("item") String item) {
         player.getInventory().addItem(Item.valueOf(item).toItemStack());
