@@ -40,7 +40,7 @@ public class VoltskiyaPlayer implements SaveFileable {
     }
 
     void onTick() {
-        if (GameMode.SURVIVAL != player.getGameMode()) return;
+        if (GameMode.ADVENTURE != player.getGameMode() && GameMode.SURVIVAL != player.getGameMode()) return;
         stamina.onTick();
         thirst.onTick();
         display.updateDisplay(thirst.getThirstPercentage(), stamina.getStaminaPercentage());

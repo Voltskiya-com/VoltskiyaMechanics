@@ -34,7 +34,7 @@ public class VoltskiyaListener implements Listener {
 
     @EventHandler
     public void onChangeGameMode(PlayerGameModeChangeEvent e) {
-        if (GameMode.SURVIVAL != e.getNewGameMode())
+        if (GameMode.ADVENTURE != e.getNewGameMode() && GameMode.SURVIVAL != e.getNewGameMode())
             e.getPlayer().sendActionBar(Component.empty()); //Disables the display when in creative
     }
 
@@ -44,5 +44,4 @@ public class VoltskiyaListener implements Listener {
             .onConsume(new VoltskiyaItemStack(e.getItem()), e.getReplacement());
         e.setReplacement(replacement);
     }
-
 }
