@@ -1,8 +1,7 @@
 package com.voltskiya.mechanics.tribe;
 
 import com.voltskiya.lib.AbstractModule;
-import com.voltskiya.mechanics.tribe.command.TribeManageCommand;
-import com.voltskiya.mechanics.tribe.database.Tribe;
+import com.voltskiya.mechanics.tribe.command.TribeCommand;
 
 public class TribeModule extends AbstractModule {
 
@@ -18,13 +17,8 @@ public class TribeModule extends AbstractModule {
 
     @Override
     public void enable() {
-        new TribeManageCommand();
-        Tribe.loadAll();
-    }
-
-    @Override
-    public boolean shouldEnable() {
-        return false;
+        new TribeCommand();
+        new PlayerTeamJoinListener();
     }
 
     @Override
