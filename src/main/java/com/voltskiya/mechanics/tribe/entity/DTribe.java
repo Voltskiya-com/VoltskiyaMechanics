@@ -110,7 +110,7 @@ public class DTribe extends BaseEntity {
         announce(Component.text("%s has joined %s".formatted(player.getName(), this.name)));
     }
 
-    private void announce(TextComponent announcement) {
+    public void announce(Component announcement) {
         for (DTribeMember member : this.getMembers()) {
             if (member.getPlayer() instanceof Player player) {
                 player.sendMessage(announcement);
@@ -133,5 +133,14 @@ public class DTribe extends BaseEntity {
 
     public List<DTribeMember> getMembers() {
         return this.members.stream().sorted(MEMBER_COMPARATOR).toList();
+    }
+
+    public List<DTribeInvite> getInvites() {
+        return List.copyOf(this.issuedInvites);
+    }
+
+    @Nullable
+    public DTribeMember getMember(UUID uuid) {
+        return this.members.stream().filter(member -> member.getPlayerId().equals(uuid)).findAny().orElse(null);
     }
 }

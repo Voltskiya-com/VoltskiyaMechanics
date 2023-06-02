@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 
 @Entity
 @Table(name = "tribe_invite")
@@ -25,5 +27,9 @@ public class DTribeInvite extends BaseEntity {
         this.fromInvite = fromInvite;
         this.toInvite = toInvite;
         this.tribe = tribe;
+    }
+
+    public OfflinePlayer getTargetPlayer() {
+        return Bukkit.getOfflinePlayer(this.toInvite);
     }
 }

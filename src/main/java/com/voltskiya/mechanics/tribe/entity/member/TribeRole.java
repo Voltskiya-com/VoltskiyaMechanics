@@ -19,8 +19,12 @@ public enum TribeRole {
         return this != MEMBER;
     }
 
+    public boolean canKick(TribeRole otherRole) {
+        return getRank() < otherRole.getRank();
+    }
+
     @DbEnumValue
-    public String getName() {
+    public String getDBValue() {
         return this.name();
     }
 
@@ -43,5 +47,11 @@ public enum TribeRole {
             case MEMBER -> 0x27dbf2;
         };
         return TextColor.color(color);
+    }
+
+
+    @Override
+    public String toString() {
+        return this.displayName();
     }
 }
