@@ -54,4 +54,8 @@ public enum TribeRole {
     public String toString() {
         return this.displayName();
     }
+
+    public boolean canClaim() {
+        return this == LIEUTENANT || this == LEADER;
+    }
 }

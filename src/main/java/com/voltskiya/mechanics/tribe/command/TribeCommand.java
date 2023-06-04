@@ -9,6 +9,7 @@ import com.voltskiya.lib.acf.annotation.CommandCompletion;
 import com.voltskiya.lib.acf.annotation.CommandPermission;
 import com.voltskiya.lib.acf.annotation.Name;
 import com.voltskiya.lib.acf.annotation.Optional;
+import com.voltskiya.lib.acf.annotation.Single;
 import com.voltskiya.lib.acf.annotation.Subcommand;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import com.voltskiya.mechanics.tribe.entity.member.DTribeMember;
@@ -21,7 +22,7 @@ import org.bukkit.entity.Player;
 
 @CommandAlias("tribe")
 @CommandPermission("volt.tribe")
-public class TribeCommand extends BaseCommand implements TribeCommandMembership, TribeCommandInfo {
+public class TribeCommand extends BaseCommand implements TribeCommandMembership, TribeCommandClaim, TribeCommandInfo {
 
     public TribeCommand() {
         PaperCommandManager cmd = VoltskiyaPlugin.get().getCommandManager();
@@ -58,17 +59,35 @@ public class TribeCommand extends BaseCommand implements TribeCommandMembership,
     }
 
 
-    @Subcommand("manage")
-    public class TribeSubCommandManage extends BaseCommand {
+    @Subcommand("claims")
+    public class TribeSubCommandClaim extends BaseCommand {
 
         @Subcommand("claim")
         @CommandCompletion("@nothing")
-        public void claim(Player player, DTribeMember member) {
-
+        public void cmdClaim(Player player, DTribeMember member) {
+            claim(player, member);
         }
+
+        @Subcommand("unclaim")
+        @CommandCompletion("@nothing")
+        public void cmdUnClaim(Player player, DTribeMember member, @Optional @Name("chunk_key") Long chunk) {
+            unclaim(player, member, chunk);
+        }
+
+        @Subcommand("list")
+        @CommandCompletion("@nothing")
+        public void cmdList(Player player, DTribeMember member) {
+            claimList(player, member);
+        }
+
+    }
+
+    @Subcommand("manage")
+    public class TribeSubCommandManage extends BaseCommand {
 
         @Subcommand("rename")
         public void rename(Player player, DTribeMember tribePlayer, @Name("member") String promotee) {
+
         }
     }
 
@@ -100,9 +119,9 @@ public class TribeCommand extends BaseCommand implements TribeCommandMembership,
     public class TribeSubCommandMembership extends BaseCommand {
 
         @Subcommand("create")
-        @CommandCompletion("[name]")
-        public void cmdCreate(Player player, DTribeMember tribePlayer, String name) {
-            create(player, tribePlayer, name);
+        @CommandCompletion("[tag] [name]")
+        public void cmdCreate(Player player, DTribeMember tribePlayer, @Single @Name("tag") String tag, @Name("name") String name) {
+            create(player, tribePlayer, name, tag);
         }
 
         @Subcommand("invite")

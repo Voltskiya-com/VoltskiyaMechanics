@@ -2,6 +2,7 @@ package com.voltskiya.mechanics.tribe.entity;
 
 import com.voltskiya.mechanics.database.BaseEntity;
 import com.voltskiya.mechanics.tribe.PlayerTeamJoinListener;
+import com.voltskiya.mechanics.tribe.entity.claim.DTribeClaimManager;
 import com.voltskiya.mechanics.tribe.entity.member.DTribeMember;
 import com.voltskiya.mechanics.tribe.entity.member.TribeRole;
 import com.voltskiya.mechanics.tribe.query.TribeStorage;
@@ -17,6 +18,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -41,28 +43,39 @@ public class DTribe extends BaseEntity {
     public static final Comparator<DTribeMember> MEMBER_COMPARATOR = Comparator.<DTribeMember>comparingInt(
             (member) -> member.getRole().getRank())
         .thenComparingLong((member) -> member.getJoined().toEpochMilli());
-    private static final Pattern TRIBE_NAME_REGEX = Pattern.compile("[a-zA-Z0-9_]{5,20}");
+    private static final Pattern TRIBE_NAME_REGEX = Pattern.compile("^.{3,40}$");
+    private static final Pattern TRIBE_TAG_REGEX = Pattern.compile("^[a-zA-Z]{3,5}$");
     @Id
     protected UUID id;
     @Column(unique = true)
     protected String name;
+    @Column(unique = true)
+    protected String tag;
     @OneToMany(cascade = CascadeType.ALL)
     protected List<DTribeMember> members = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL)
     protected List<DTribeInvite> issuedInvites = new ArrayList<>();
+    @OneToOne(optional = false, cascade = CascadeType.ALL, mappedBy = "tribe")
+    protected DTribeClaimManager claims;
 
-    private DTribe(String name) {
+    private DTribe(String name, String tag) {
         this.name = name;
+        this.tag = tag;
+        this.claims = new DTribeClaimManager(this);
     }
 
-    public static DTribe createAndRegister(String name, Player leaderPlayer) {
+    public static DTribe createAndRegister(String name, Player leaderPlayer, String tag) {
         if (TribeStorage.findTribe(name) != null) {
             throw new IllegalArgumentException("There is already a tribe named %s".formatted(name));
         }
-        DTribe tribe = new DTribe(name);
+        if (TribeStorage.findTribeByTag(tag) != null) {
+            throw new IllegalArgumentException("There is already a tribe with tag %s".formatted(tag));
+        }
+        DTribe tribe = new DTribe(name, tag);
         if (!TRIBE_NAME_REGEX.asMatchPredicate().test(name))
             throw new IllegalArgumentException("%s does not match regex %s".formatted(name, TRIBE_NAME_REGEX.pattern()));
-
+        if (!TRIBE_TAG_REGEX.asMatchPredicate().test(name))
+            throw new IllegalArgumentException("%s does not match regex %s".formatted(tag, TRIBE_TAG_REGEX.pattern()));
         DTribeMember leader = tribe.join(leaderPlayer);
         tribe.save();
         leader.setRole(TribeRole.LEADER);
@@ -102,6 +115,10 @@ public class DTribe extends BaseEntity {
         return this.name;
     }
 
+    public String getTag() {
+        return tag;
+    }
+
     public void showWelcome(Player player) {
         TextComponent header = Component.text("Welcome to %s".formatted(name));
         Times timings = Times.times(Duration.ZERO, Duration.ofSeconds(2), Duration.ofSeconds(1));
@@ -122,6 +139,8 @@ public class DTribe extends BaseEntity {
         Optional<DTribeMember> nextLeader = this.getMembers().stream().min(MEMBER_COMPARATOR);
         if (nextLeader.isEmpty()) {
             getTeam().unregister();
+            DTribeClaimManager claims = this.getClaims();
+            claims.getClaimsList().forEach(claims::unclaim);
             this.delete();
         } else {
             DTribeMember member = nextLeader.get();
@@ -141,6 +160,14 @@ public class DTribe extends BaseEntity {
 
     @Nullable
     public DTribeMember getMember(UUID uuid) {
-        return this.members.stream().filter(member -> member.getPlayerId().equals(uuid)).findAny().orElse(null);
+        return this.members.stream()
+            .filter(member -> member.getPlayerId().equals(uuid))
+            .findAny()
+            .orElse(null);
     }
+
+    public DTribeClaimManager getClaims() {
+        return this.claims;
+    }
+
 }

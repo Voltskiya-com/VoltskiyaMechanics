@@ -14,13 +14,13 @@ import org.bukkit.entity.Player;
 
 public interface TribeCommandMembership extends TribeCommandUtil {
 
-    default void create(Player player, DTribeMember tribePlayer, String name) {
+    default void create(Player player, DTribeMember tribePlayer, String name, String tag) {
         if (tribePlayer != null) {
             onlyOneTribe(player, tribePlayer);
             return;
         }
         try {
-            DTribe tribe = DTribe.createAndRegister(name, player);
+            DTribe tribe = DTribe.createAndRegister(name, player, tag);
             tribe.showWelcome(player);
         } catch (IllegalArgumentException e) {
             red(player, e.getMessage());
@@ -35,7 +35,7 @@ public interface TribeCommandMembership extends TribeCommandUtil {
         }
         String tribeName = member.getTribe().getName();
         if (confirm == null || !confirm.equals("confirm")) {
-            red(player, "Are you sure you want to leave %s? To confirm, run /tribe leave confirm", tribeName);
+            red(player, "Are you sure you want to leave %s? To confirm, run /tribe membership leave confirm", tribeName);
             return;
         }
         member.leave();

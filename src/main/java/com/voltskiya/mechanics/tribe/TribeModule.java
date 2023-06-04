@@ -23,6 +23,6 @@ public class TribeModule extends AbstractModule {
 
     @Override
     public String getName() {
-        return "Team";
+        return "Tribe";
     }
 }

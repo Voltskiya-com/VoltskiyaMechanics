@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import com.voltskiya.mechanics.tribe.entity.DTribe;
 import com.voltskiya.mechanics.tribe.entity.DTribeInvite;
+import com.voltskiya.mechanics.tribe.entity.claim.DTribeClaim;
+import com.voltskiya.mechanics.tribe.entity.claim.DTribeClaimManager;
 import com.voltskiya.mechanics.tribe.entity.member.DTribeMember;
 import com.voltskiya.mechanics.tribe.query.TribeStorage;
 import io.ebean.Database;
@@ -43,6 +45,7 @@ public class MechanicsDatabase extends VoltskiyaDatabase {
     protected List<Class<?>> getEntities() {
         List<Class<?>> entities = new ArrayList<>(List.of(BaseEntity.class));
         entities.addAll(List.of(DTribe.class, DTribeMember.class, DTribeInvite.class));
+        entities.addAll(List.of(DTribeClaimManager.class, DTribeClaim.class));
         return entities;
     }
 

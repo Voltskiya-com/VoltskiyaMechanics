@@ -11,6 +11,6 @@ public interface TribeCommandUtil extends SendMessage {
     }
 
     default void onlyOneTribe(Player player, DTribeMember tribePlayer) {
-        red(player, "You are already a member of %s".formatted(tribePlayer));
+        red(player, "You are already a member of %s".formatted(tribePlayer.getTribe().getName()));
     }
 }

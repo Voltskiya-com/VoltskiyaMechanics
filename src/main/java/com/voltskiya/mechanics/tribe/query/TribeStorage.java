@@ -16,4 +16,7 @@ public class TribeStorage {
         return new QDTribe().where().name.ieq(name).findOne();
     }
 
+    public static DTribe findTribeByTag(String tag) {
+        return new QDTribe().where().tag.ieq(tag).findOne();
+    }
 }
