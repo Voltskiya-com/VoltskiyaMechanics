@@ -4,7 +4,6 @@ import com.voltskiya.mechanics.food.config.CoolerConfig;
 import com.voltskiya.mechanics.food.util.CoolerHandler;
 import com.voltskiya.mechanics.food.util.FoodHandler;
 import com.voltskiya.mechanics.food.util.FoodItem;
-import com.voltskiya.mechanics.rotting.ContainerRottingDecrement;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -23,7 +22,6 @@ public class RottingShiftMove implements FoodHandler, CoolerHandler {
         // verify all items are up to date
         if (!updateItemsFirst) return;
         this.source.update();
-        new ContainerRottingDecrement(destination).tick();
     }
 
     public RottingShiftMoveResult complete() {

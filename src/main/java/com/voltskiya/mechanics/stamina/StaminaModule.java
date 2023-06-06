@@ -17,10 +17,6 @@ public class StaminaModule extends AbstractModule {
         return instance;
     }
 
-    public static NamespacedKey key(String key) {
-        return get().getKey(key);
-    }
-
     @Override
     public void enable() {
         new StaminaListener();

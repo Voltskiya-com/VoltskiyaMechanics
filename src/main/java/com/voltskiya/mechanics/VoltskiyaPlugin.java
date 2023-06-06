@@ -2,7 +2,7 @@ package com.voltskiya.mechanics;
 
 import com.voltskiya.lib.AbstractModule;
 import com.voltskiya.lib.AbstractVoltPlugin;
-import com.voltskiya.mechanics.food.FoodDecayModule;
+import com.voltskiya.mechanics.database.MechanicsDatabase;
 import com.voltskiya.mechanics.player.VoltskiyaPlayerManager;
 import com.voltskiya.mechanics.stamina.StaminaModule;
 import com.voltskiya.mechanics.thirst.ThirstModule;
@@ -32,6 +32,7 @@ public class VoltskiyaPlugin extends AbstractVoltPlugin {
 
     @Override
     public void initialize() {
+        new MechanicsDatabase();
         VoltskiyaPlayerManager.load();
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, VoltskiyaPlayerManager::tickPlayers, 0, TICKS_PER_INCREMENT);
         // save all online players occasionally
@@ -43,6 +44,6 @@ public class VoltskiyaPlugin extends AbstractVoltPlugin {
 
     @Override
     public Collection<AbstractModule> getModules() {
-        return List.of(new ThirstModule(), new FoodDecayModule(), new StaminaModule(), new TribeModule());
+        return List.of(new ThirstModule(), new StaminaModule(), new TribeModule());
     }
 }

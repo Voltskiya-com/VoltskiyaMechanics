@@ -64,13 +64,13 @@ public class Stamina {
         boolean isSwimming = player.isSwimming();
         boolean isSneaking = player.isSneaking();
         StaminaConfig config = StaminaConfig.get();
-        if (isJumping && isSprinting) return config.getSprintJumpingIncrement();
-        else if (isJumping) return config.getJumpingIncrement();
-        else if (isSwimming) return config.getSwimmingIncrement();
-        else if (isSneaking) return config.getCrouchingIncrement();
-        else if (isStanding) return config.getStandingStillIncrement();
-        else if (isSprinting) return config.getSprintingIncrement();
-        else return config.getWalkingIncrement();
+        if (isJumping && isSprinting) return config.sprintJumpingIncrement;
+        else if (isJumping) return config.jumpingIncrement;
+        else if (isSwimming) return config.swimmingIncrement;
+        else if (isSneaking) return config.crouchingIncrement;
+        else if (isSprinting) return config.sprintingIncrement;
+        else if (isStanding) return config.standingStillIncrement;
+        else return config.walkingIncrement;
     }
 
     public boolean isJumping() {
