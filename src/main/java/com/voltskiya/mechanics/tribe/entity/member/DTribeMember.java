@@ -44,8 +44,9 @@ public class DTribeMember extends BaseEntity {
     }
 
     public void leave() {
-        this.delete();
         OfflinePlayer player = this.getPlayer();
+        getTribe().getClaims().removeMember(this.getPlayerId());
+        this.delete();
         this.tribe.getTeam().removePlayer(player);
         PlayerTeamJoinListener.joinPlayer(player);
         if (this.role.isLeader()) {

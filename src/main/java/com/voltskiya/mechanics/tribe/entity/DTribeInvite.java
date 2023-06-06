@@ -7,18 +7,19 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 @Entity
-@Table(name = "tribe_invite")
+@Table(name = "tribe_invite", uniqueConstraints = {@UniqueConstraint(columnNames = {"to_invite", "tribe_id"})})
 public class DTribeInvite extends BaseEntity {
 
     @Id
     protected UUID id;
     @Column(nullable = false)
     protected UUID fromInvite;
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     protected UUID toInvite;
     @ManyToOne(optional = false)
     protected DTribe tribe;

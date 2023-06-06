@@ -104,6 +104,7 @@ public class DTribe extends BaseEntity {
     }
 
     public DTribeMember join(OfflinePlayer player) {
+        getClaims().addMember(player.getUniqueId());
         DTribeMember member = new DTribeMember(player.getUniqueId(), this);
         this.members.add(member);
         PlayerTeamJoinListener.leavePlayer(player);
