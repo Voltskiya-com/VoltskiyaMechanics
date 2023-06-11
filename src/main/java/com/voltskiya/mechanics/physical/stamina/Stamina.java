@@ -1,6 +1,6 @@
 package com.voltskiya.mechanics.physical.stamina;
 
-import com.voltskiya.mechanics.physical.player.VoltskiyaPlayer;
+import com.voltskiya.mechanics.physical.player.PhysicalPlayer;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -11,11 +11,11 @@ public class Stamina {
     public static final int MAX_STAMINA = 20_000;
     public static final int NO_REGEN_AT_0_STAMINA_TICKS = 5 * 20;
     public static final PotionEffect LOW_SPRINT_EFFECT = PotionEffectType.HUNGER.createEffect(30, 0);
-    private transient VoltskiyaPlayer player;
-    private transient Location lastLocation;
-    private int stamina = MAX_STAMINA;
-    private int noRegenTimer = 0;
+    protected int stamina = MAX_STAMINA;
+    protected int noRegenTimer = 0;
+    private transient PhysicalPlayer player;
     private transient boolean isJumping = false;
+    private transient Location lastLocation;
 
     public void addStamina(int amount) {
         if (noRegenTimer != 0) return;
@@ -29,7 +29,7 @@ public class Stamina {
         }
     }
 
-    public void onLoad(VoltskiyaPlayer player) {
+    public void onLoad(PhysicalPlayer player) {
         this.player = player;
         lastLocation = player.getPlayer().getLocation();
     }

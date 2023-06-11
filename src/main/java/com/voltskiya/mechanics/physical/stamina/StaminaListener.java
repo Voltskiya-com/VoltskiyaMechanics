@@ -1,7 +1,7 @@
 package com.voltskiya.mechanics.physical.stamina;
 
 import com.voltskiya.mechanics.VoltskiyaPlugin;
-import com.voltskiya.mechanics.physical.player.VoltskiyaPlayerManager;
+import com.voltskiya.mechanics.physical.player.PhysicalPlayerManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,7 +18,7 @@ public class StaminaListener implements Listener {
     @EventHandler
     public void onJump(EntityExhaustionEvent e) {
         if (!(e.getEntity() instanceof Player player)) return;
-        Stamina stamina = VoltskiyaPlayerManager.getPlayer(player).getStamina();
+        Stamina stamina = PhysicalPlayerManager.getPlayer(player).getStamina();
         ExhaustionReason reason = e.getExhaustionReason();
         if (reason == ExhaustionReason.JUMP_SPRINT || reason == ExhaustionReason.JUMP) {
             stamina.setJumping();

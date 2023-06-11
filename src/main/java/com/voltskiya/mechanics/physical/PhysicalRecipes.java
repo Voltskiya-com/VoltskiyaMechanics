@@ -1,9 +1,12 @@
-package com.voltskiya.mechanics;
+package com.voltskiya.mechanics.physical;
 
+import com.voltskiya.mechanics.Item;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
-import lombok.extern.log4j.Log4j2;
 import net.minecraft.world.item.crafting.CookingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -19,20 +22,17 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 @UtilityClass
-public class VoltskiyaRecipeManager {
+public class PhysicalRecipes {
+
     @Getter
     private final List<NamespacedKey> recipes = new ArrayList<>();
 
 
     @Getter(lazy = true)
-    private final RecipeManager recipeManager = ((CraftServer)Bukkit.getServer()).getServer().getRecipeManager();
+    private final RecipeManager recipeManager = ((CraftServer) Bukkit.getServer()).getServer().getRecipeManager();
 
-    public void shaped(NamespacedKey key, Item result, String[] shape, VoltskiyaRecipeManager.IngredientMapping... ingredients) {
+    public void shaped(NamespacedKey key, Item result, String[] shape, PhysicalRecipes.IngredientMapping... ingredients) {
         ShapedRecipe shapedRecipe = new ShapedRecipe(key, result.toItemStack());
         shapedRecipe.shape(shape);
         Arrays.stream(ingredients).forEach(im -> shapedRecipe.setIngredient(im.getKey(), im.getRecipeChoice()));
@@ -40,7 +40,7 @@ public class VoltskiyaRecipeManager {
         Bukkit.addRecipe(shapedRecipe);
     }
 
-    public void shapeless(NamespacedKey key, Item result, VoltskiyaRecipeManager.IngredientChoice... ingredients) {
+    public void shapeless(NamespacedKey key, Item result, PhysicalRecipes.IngredientChoice... ingredients) {
         ShapelessRecipe shapelessRecipe = new ShapelessRecipe(key, result.toItemStack());
         Arrays.stream(ingredients).forEach(ic -> shapelessRecipe.addIngredient(ic.getRecipeChoice()));
         recipes.add(key);
@@ -49,15 +49,18 @@ public class VoltskiyaRecipeManager {
 
     public void furnace(NamespacedKey key, ItemStack result, Item input) {
         recipes.add(key);
-        Ingredient ingredient = new Ingredient(List.of(new Ingredient.ItemValue(CraftItemStack.asNMSCopy(input.toItemStack()))).stream());
+        Ingredient ingredient = new Ingredient(
+            List.of(new Ingredient.ItemValue(CraftItemStack.asNMSCopy(input.toItemStack()))).stream());
         ingredient.exact = true;
-        SmeltingRecipe smeltingRecipe = new SmeltingRecipe(CraftNamespacedKey.toMinecraft(key), "", CookingBookCategory.FOOD, ingredient, CraftItemStack.asNMSCopy(result), 0.0F, 100);
+        SmeltingRecipe smeltingRecipe = new SmeltingRecipe(CraftNamespacedKey.toMinecraft(key), "", CookingBookCategory.FOOD,
+            ingredient, CraftItemStack.asNMSCopy(result), 0.0F, 100);
         getRecipeManager().addRecipe(smeltingRecipe);
     }
 
     @AllArgsConstructor
     @Getter
     public static class IngredientChoice {
+
         private final RecipeChoice recipeChoice;
 
         public IngredientChoice(Material material) {
@@ -76,6 +79,7 @@ public class VoltskiyaRecipeManager {
     @AllArgsConstructor
     @Getter
     public static class IngredientMapping {
+
         private final char key;
         private final RecipeChoice recipeChoice;
 

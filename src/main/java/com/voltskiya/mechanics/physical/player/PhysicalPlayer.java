@@ -3,6 +3,7 @@ package com.voltskiya.mechanics.physical.player;
 import apple.utilities.database.SaveFileable;
 import com.voltskiya.mechanics.Display;
 import com.voltskiya.mechanics.physical.stamina.Stamina;
+import com.voltskiya.mechanics.physical.thirst.Thirst;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,15 +15,15 @@ import org.jetbrains.annotations.NotNull;
 
 @NoArgsConstructor // for gson
 @Getter
-public class VoltskiyaPlayer implements SaveFileable {
+public class PhysicalPlayer implements SaveFileable {
 
     private final transient Display display = new Display();
     private transient Player player;
-    //    private Thirst thirst;
+    private Thirst thirst;
     private Stamina stamina;
 
-    VoltskiyaPlayer(@NotNull Player player) {
-//        thirst = new Thirst();
+    public PhysicalPlayer(@NotNull Player player) {
+        thirst = new Thirst();
         stamina = new Stamina();
         onLoad(player);
     }
@@ -33,7 +34,7 @@ public class VoltskiyaPlayer implements SaveFileable {
 
     void onLoad(Player player) {
         this.player = player;
-//        thirst.onLoad(player);
+        thirst.onLoad(player);
         stamina.onLoad(this);
         display.onLoad(player);
     }
@@ -63,7 +64,7 @@ public class VoltskiyaPlayer implements SaveFileable {
 
     public void onLeave() {
         display.remove();
-        VoltskiyaPlayerManager.remove(player.getUniqueId());
+        PhysicalPlayerManager.remove(player.getUniqueId());
     }
 
     @Override

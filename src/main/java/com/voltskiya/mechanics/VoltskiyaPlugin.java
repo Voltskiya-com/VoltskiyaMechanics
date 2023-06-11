@@ -5,7 +5,7 @@ import com.voltskiya.lib.AbstractVoltPlugin;
 import com.voltskiya.mechanics.chat.ChatModule;
 import com.voltskiya.mechanics.database.MechanicsDatabase;
 import com.voltskiya.mechanics.physical.PhysicalModule;
-import com.voltskiya.mechanics.physical.player.VoltskiyaPlayerManager;
+import com.voltskiya.mechanics.physical.player.PhysicalPlayerManager;
 import com.voltskiya.mechanics.physical.stamina.StaminaModule;
 import com.voltskiya.mechanics.tribe.TribeModule;
 import java.util.ArrayList;
@@ -30,17 +30,17 @@ public class VoltskiyaPlugin extends AbstractVoltPlugin {
 
     @Override
     public void onDisablePost() {
-        VoltskiyaPlayerManager.saveNow();
+        PhysicalPlayerManager.saveNow();
     }
 
     @Override
     public void initialize() {
         new MechanicsDatabase();
-        VoltskiyaPlayerManager.load();
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, VoltskiyaPlayerManager::tickPlayers, 0, TICKS_PER_INCREMENT);
+        PhysicalPlayerManager.load();
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, PhysicalPlayerManager::tickPlayers, 0, TICKS_PER_INCREMENT);
         // save all online players occasionally
         Bukkit.getScheduler()
-            .runTaskTimer(this, VoltskiyaPlayerManager::save, TICKS_BETWEEN_SAVE, 20 * TICKS_PER_INCREMENT);
+            .runTaskTimer(this, PhysicalPlayerManager::save, TICKS_BETWEEN_SAVE, 20 * TICKS_PER_INCREMENT);
         List<NamespacedKey> removeBossBars = new ArrayList<>();
         Bukkit.getBossBars().forEachRemaining(
             (bar) -> {
@@ -50,7 +50,6 @@ public class VoltskiyaPlugin extends AbstractVoltPlugin {
         );
 
         removeBossBars.forEach(Bukkit::removeBossBar);
-        Bukkit.getPluginManager().registerEvents(new VoltskiyaListener(), this);
     }
 
     @Override

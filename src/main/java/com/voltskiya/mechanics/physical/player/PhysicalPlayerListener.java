@@ -1,8 +1,8 @@
-package com.voltskiya.mechanics;
+package com.voltskiya.mechanics.physical.player;
 
-import com.voltskiya.mechanics.physical.player.VoltskiyaPlayerManager;
+import com.voltskiya.mechanics.VoltskiyaPlugin;
+import com.voltskiya.mechanics.physical.PhysicalRecipes;
 import net.kyori.adventure.text.Component;
-import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,29 +10,34 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import voltskiya.apple.utilities.minecraft.player.PlayerUtils;
 
-public class VoltskiyaListener implements Listener {
+public class PhysicalPlayerListener implements Listener {
+
+    public PhysicalPlayerListener() {
+        VoltskiyaPlugin.get().registerEvents(this);
+    }
 
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
-        VoltskiyaPlayerManager.getPlayer(e.getPlayer()).onLeave();
+        PhysicalPlayerManager.getPlayer(e.getPlayer()).onLeave();
     }
 
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
-        VoltskiyaPlayerManager.getPlayer(e.getPlayer()).onDeath();
+        PhysicalPlayerManager.getPlayer(e.getPlayer()).onDeath();
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
-        player.discoverRecipes(VoltskiyaRecipeManager.getRecipes());
-        VoltskiyaPlayerManager.getPlayer(player);
+        player.discoverRecipes(PhysicalRecipes.getRecipes());
+        PhysicalPlayerManager.fetchPlayer(player);
     }
 
     @EventHandler
     public void onChangeGameMode(PlayerGameModeChangeEvent e) {
-        if (GameMode.ADVENTURE != e.getNewGameMode() && GameMode.SURVIVAL != e.getNewGameMode())
+        if (!PlayerUtils.isSurvival(e.getNewGameMode()))
             e.getPlayer().sendActionBar(Component.empty()); //Disables the display when in creative
     }
 

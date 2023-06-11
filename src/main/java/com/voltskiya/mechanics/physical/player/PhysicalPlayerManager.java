@@ -8,40 +8,49 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class VoltskiyaPlayerManager {
+public final class PhysicalPlayerManager {
 
-    private static final Map<UUID, VoltskiyaPlayer> players = new HashMap<>();
-    private static AppleAJDTyped<VoltskiyaPlayer> manager;
-
-    public static void savePlayer(VoltskiyaPlayer player) {
-        manager.saveInFolder(player);
-    }
+    private static final Map<UUID, PhysicalPlayer> players = new HashMap<>();
+    private static AppleAJDTyped<PhysicalPlayer> manager;
 
     public static void remove(UUID uuid) {
         synchronized (players) {
             players.remove(uuid);
         }
+    }
+
+    public static void fetchPlayer(Player bukkitPlayer) {
+        UUID uuid = bukkitPlayer.getUniqueId();
+        synchronized (players) {
+            if (players.containsKey(uuid)) return;
+        }
+        manager.loadFromFolder(PhysicalPlayer.getSaveFileName(uuid))
+            .onSuccess((player) -> {
+                player.onLoad(bukkitPlayer);
+                synchronized (players) {
+                    players.put(uuid, player);
+                }
+            });
+
 
     }
 
-    public static VoltskiyaPlayer getPlayer(Player bukkitPlayer) {
+    public static PhysicalPlayer getPlayer(Player bukkitPlayer) {
         UUID uuid = bukkitPlayer.getUniqueId();
-        VoltskiyaPlayer player;
+        PhysicalPlayer player;
         synchronized (players) {
             player = players.get(uuid);
         }
         if (player != null)
             return player;
 
-        player = manager.loadFromFolderNow(VoltskiyaPlayer.getSaveFileName(uuid));
+        player = manager.loadFromFolderNow(PhysicalPlayer.getSaveFileName(uuid));
+
         if (player == null)
-            player = new VoltskiyaPlayer(bukkitPlayer);
+            player = new PhysicalPlayer(bukkitPlayer);
         else
             player.onLoad(bukkitPlayer);
         synchronized (players) {
@@ -52,13 +61,13 @@ public final class VoltskiyaPlayerManager {
 
     public static void load() {
         File file = new File(VoltskiyaPlugin.get().getDataFolder(), "players");
-        manager = AppleAJD.createTyped(VoltskiyaPlayer.class, file, FileIOServiceNow.taskCreator());
-        Bukkit.getOnlinePlayers().forEach(VoltskiyaPlayerManager::getPlayer);
+        manager = AppleAJD.createTyped(PhysicalPlayer.class, file, FileIOServiceNow.taskCreator());
+        Bukkit.getOnlinePlayers().forEach(PhysicalPlayerManager::getPlayer);
     }
 
     public static void tickPlayers() {
         synchronized (players) {
-            players.values().forEach(VoltskiyaPlayer::onTick);
+            players.values().forEach(PhysicalPlayer::onTick);
         }
     }
 

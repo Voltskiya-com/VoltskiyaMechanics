@@ -1,6 +1,7 @@
 package com.voltskiya.mechanics.physical;
 
 import com.voltskiya.lib.AbstractModule;
+import com.voltskiya.mechanics.physical.player.PhysicalPlayerListener;
 import com.voltskiya.mechanics.physical.stamina.StaminaListener;
 import com.voltskiya.mechanics.physical.thirst.ThirstCommand;
 import com.voltskiya.mechanics.physical.thirst.ThirstListener;
@@ -27,6 +28,7 @@ public class PhysicalModule extends AbstractModule {
 
         new StaminaListener();
 
+        new PhysicalPlayerListener();
     }
 
     @Override
