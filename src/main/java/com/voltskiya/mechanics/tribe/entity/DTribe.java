@@ -73,9 +73,9 @@ public class DTribe extends BaseEntity {
         }
         DTribe tribe = new DTribe(name, tag);
         if (!TRIBE_NAME_REGEX.asMatchPredicate().test(name))
-            throw new IllegalArgumentException("%s does not match regex %s".formatted(name, TRIBE_NAME_REGEX.pattern()));
-        if (!TRIBE_TAG_REGEX.asMatchPredicate().test(name))
-            throw new IllegalArgumentException("%s does not match regex %s".formatted(tag, TRIBE_TAG_REGEX.pattern()));
+            throw new IllegalArgumentException("%s must be between 3 and 40 characters long");
+        if (!TRIBE_TAG_REGEX.asMatchPredicate().test(tag))
+            throw new IllegalArgumentException("%s must be contain only alphabetic characters and be between 3 and 5 characters long");
         DTribeMember leader = tribe.join(leaderPlayer);
         tribe.save();
         leader.setRole(TribeRole.LEADER);

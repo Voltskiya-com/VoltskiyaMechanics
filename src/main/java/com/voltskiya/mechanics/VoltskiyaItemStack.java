@@ -1,5 +1,6 @@
 package com.voltskiya.mechanics;
 
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -12,10 +13,9 @@ import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-
 @AllArgsConstructor
 public class VoltskiyaItemStack {
+
     private final ItemStack itemStack;
 
     public VoltskiyaItemStack(Material material) {
@@ -26,6 +26,21 @@ public class VoltskiyaItemStack {
         itemStack = item.toItemStack();
     }
 
+    public static void forceAdd(Player player, ItemStack itemStack) {
+        Location location = player.getLocation();
+        World world = location.getWorld();
+        player.getInventory().addItem(new ItemStack[]{itemStack})
+            .entrySet()
+            .stream()
+            .map(VoltskiyaItemStack::setAmount)
+            .forEach((itemStack1) -> world.dropItem(location, itemStack1));
+    }
+
+    private static ItemStack setAmount(Map.Entry<Integer, ? extends ItemStack> itemStack) {
+        itemStack.getValue().setAmount(itemStack.getKey());
+        return itemStack.getValue();
+    }
+
     public final Item getItem() {
         return Item.getItem(getItemStack());
     }
@@ -33,21 +48,6 @@ public class VoltskiyaItemStack {
     public void change1To(Item item, Player player) {
         getItemStack().setAmount(getItemStack().getAmount() - 1);
         forceAdd(player, item.toItemStack());
-    }
-
-    public static void forceAdd(Player player, ItemStack itemStack) {
-        Location location = player.getLocation();
-        World world = location.getWorld();
-        player.getInventory().addItem(new ItemStack[]{itemStack})
-                .entrySet()
-                .stream()
-                .map(VoltskiyaItemStack::setAmount)
-                .forEach((itemStack1) -> world.dropItem(location, itemStack1));
-    }
-
-    private static ItemStack setAmount(Map.Entry<Integer, ? extends ItemStack> itemStack) {
-        itemStack.getValue().setAmount(itemStack.getKey());
-        return itemStack.getValue();
     }
 
     public <T, Z> void setKey(NamespacedKey key, PersistentDataType<T, Z> type, Z value) {

@@ -8,11 +8,11 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class VoltskiyaPlayerManager {
 
@@ -27,6 +27,7 @@ public final class VoltskiyaPlayerManager {
         synchronized (players) {
             players.remove(uuid);
         }
+        
     }
 
     public static VoltskiyaPlayer getPlayer(Player bukkitPlayer) {

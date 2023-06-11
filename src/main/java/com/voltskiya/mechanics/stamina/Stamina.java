@@ -8,7 +8,7 @@ import org.bukkit.potion.PotionEffectType;
 
 public class Stamina {
 
-    public static final int MAX_STAMINA = 30_000;
+    public static final int MAX_STAMINA = 20_000;
     public static final int NO_REGEN_AT_0_STAMINA_TICKS = 5 * 20;
     public static final PotionEffect LOW_SPRINT_EFFECT = PotionEffectType.HUNGER.createEffect(30, 0);
     private transient VoltskiyaPlayer player;

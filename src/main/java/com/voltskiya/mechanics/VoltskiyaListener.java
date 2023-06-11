@@ -8,10 +8,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
 
 public class VoltskiyaListener implements Listener {
 
@@ -38,10 +36,4 @@ public class VoltskiyaListener implements Listener {
             e.getPlayer().sendActionBar(Component.empty()); //Disables the display when in creative
     }
 
-    @EventHandler
-    public void onConsume(PlayerItemConsumeEvent e) {
-        ItemStack replacement = VoltskiyaPlayerManager.getPlayer(e.getPlayer())
-            .onConsume(new VoltskiyaItemStack(e.getItem()), e.getReplacement());
-        e.setReplacement(replacement);
-    }
 }

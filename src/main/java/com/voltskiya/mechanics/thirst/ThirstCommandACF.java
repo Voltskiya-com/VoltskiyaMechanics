@@ -1,10 +1,15 @@
 package com.voltskiya.mechanics.thirst;
 
 import com.voltskiya.lib.acf.BaseCommand;
-import com.voltskiya.lib.acf.annotation.*;
+import com.voltskiya.lib.acf.annotation.CommandAlias;
+import com.voltskiya.lib.acf.annotation.CommandCompletion;
+import com.voltskiya.lib.acf.annotation.CommandPermission;
+import com.voltskiya.lib.acf.annotation.Name;
+import com.voltskiya.lib.acf.annotation.Optional;
+import com.voltskiya.lib.acf.annotation.Subcommand;
 import com.voltskiya.mechanics.Item;
-import com.voltskiya.mechanics.player.VoltskiyaPlayerManager;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
+import java.util.Arrays;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -12,14 +17,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.Objects;
-
 @CommandAlias("thirst")
 public class ThirstCommandACF extends BaseCommand {
+
     public ThirstCommandACF() {
         VoltskiyaPlugin.get().registerCommand(this);
-        VoltskiyaPlugin.get().getCommandManager().getCommandCompletions().registerStaticCompletion("volt_items", Arrays.stream(Item.values()).map(Enum::name).toList());
+        VoltskiyaPlugin.get().getCommandManager().getCommandCompletions()
+            .registerStaticCompletion("volt_items", Arrays.stream(Item.values()).map(Enum::name).toList());
     }
 
     @Subcommand("give")
@@ -32,13 +36,14 @@ public class ThirstCommandACF extends BaseCommand {
     @Subcommand("drink")
     @CommandPermission("volt.thirst.drink")
     @CommandCompletion("@players @range:1-1000")
-    public void drink(CommandSender sender, @Name("[player]") @Optional String playerName, @Name("[amount]") @Optional Integer amount) {
+    public void drink(CommandSender sender, @Name("[player]") @Optional String playerName,
+        @Name("[amount]") @Optional Integer amount) {
         Player player = getPlayer(sender, playerName);
         if (null == player) {
             sendPlayerNotFoundError(sender, playerName);
             return;
         }
-        VoltskiyaPlayerManager.getPlayer(player).getThirst().drink(Objects.requireNonNullElse(amount, Thirst.MAX_THIRST));
+//        VoltskiyaPlayerManager.getPlayer(player).getThirst().drink(Objects.requireNonNullElse(amount, Thirst.MAX_THIRST));
         sendSuccess(sender, null == playerName ? "Reset your thirst" : String.format("Reset %s's thirst", playerName));
     }
 
@@ -49,11 +54,11 @@ public class ThirstCommandACF extends BaseCommand {
         Player player = getPlayer(sender, playerName);
         if (null == player) {
             sendPlayerNotFoundError(sender, playerName);
-            return;
         }
-        boolean isThirsty = VoltskiyaPlayerManager.getPlayer(player).getThirst().toggleIsThirsty();
-        Component onOrOff = isThirsty ? Component.text("on", NamedTextColor.GREEN) : Component.text("off", NamedTextColor.RED);
-        sender.sendMessage(null == playerName ? Component.text("Your thirst is now ", NamedTextColor.AQUA).append(onOrOff) : Component.text(String.format("%s's thirst is now ", playerName), NamedTextColor.AQUA).append(onOrOff));
+//        boolean isThirsty = VoltskiyaPlayerManager.getPlayer(player).getThirst().toggleIsThirsty();
+//        Component onOrOff = isThirsty ? Component.text("on", NamedTextColor.GREEN) : Component.text("off", NamedTextColor.RED);
+//        sender.sendMessage(null == playerName ? Component.text("Your thirst is now ", NamedTextColor.AQUA).append(onOrOff)
+//            : Component.text(String.format("%s's thirst is now ", playerName), NamedTextColor.AQUA).append(onOrOff));
     }
 
     private void sendPlayerNotFoundError(CommandSender sender, String playerName) {

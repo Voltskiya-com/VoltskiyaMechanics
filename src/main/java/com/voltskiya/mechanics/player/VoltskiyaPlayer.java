@@ -2,15 +2,14 @@ package com.voltskiya.mechanics.player;
 
 import apple.utilities.database.SaveFileable;
 import com.voltskiya.mechanics.Display;
-import com.voltskiya.mechanics.VoltskiyaItemStack;
 import com.voltskiya.mechanics.stamina.Stamina;
-import com.voltskiya.mechanics.thirst.Thirst;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.bukkit.GameMode;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 @NoArgsConstructor // for gson
@@ -19,11 +18,11 @@ public class VoltskiyaPlayer implements SaveFileable {
 
     private final transient Display display = new Display();
     private transient Player player;
-    private Thirst thirst;
+    //    private Thirst thirst;
     private Stamina stamina;
 
     VoltskiyaPlayer(@NotNull Player player) {
-        thirst = new Thirst();
+//        thirst = new Thirst();
         stamina = new Stamina();
         onLoad(player);
     }
@@ -34,7 +33,7 @@ public class VoltskiyaPlayer implements SaveFileable {
 
     void onLoad(Player player) {
         this.player = player;
-        thirst.onLoad(player);
+//        thirst.onLoad(player);
         stamina.onLoad(this);
         display.onLoad(player);
     }
@@ -42,8 +41,13 @@ public class VoltskiyaPlayer implements SaveFileable {
     void onTick() {
         if (GameMode.ADVENTURE != player.getGameMode() && GameMode.SURVIVAL != player.getGameMode()) return;
         stamina.onTick();
-        thirst.onTick();
-        display.updateDisplay(thirst.getThirstPercentage(), stamina.getStaminaPercentage());
+//        thirst.onTick();
+        NamespacedKey key = new NamespacedKey("thirstcore", "thirst");
+        int maxThirst = 1000;
+        Integer playerThirst = player.getPersistentDataContainer().getOrDefault(key, PersistentDataType.INTEGER, maxThirst);
+        double thirstPercentage = (double) playerThirst / maxThirst;
+
+        display.updateDisplay(thirstPercentage, stamina.getStaminaPercentage());
     }
 
     public void verifySprint() {
@@ -54,12 +58,11 @@ public class VoltskiyaPlayer implements SaveFileable {
     }
 
     public void onDeath() {
-        thirst.onDeath();
         stamina.onDeath();
     }
 
     public void onLeave() {
-        display.cancelTask();
+        display.remove();
         VoltskiyaPlayerManager.remove(player.getUniqueId());
     }
 
@@ -68,7 +71,7 @@ public class VoltskiyaPlayer implements SaveFileable {
         return getSaveFileName(player.getUniqueId());
     }
 
-    public ItemStack onConsume(VoltskiyaItemStack itemStack, ItemStack replacement) {
-        return thirst.onConsume(itemStack, replacement);
-    }
+//    public ItemStack onConsume(VoltskiyaItemStack itemStack, ItemStack replacement) {
+//        return thirst.onConsume(itemStack, replacement);
+//    }
 }

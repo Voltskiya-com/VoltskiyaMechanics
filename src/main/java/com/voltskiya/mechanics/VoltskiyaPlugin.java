@@ -7,9 +7,11 @@ import com.voltskiya.mechanics.player.VoltskiyaPlayerManager;
 import com.voltskiya.mechanics.stamina.StaminaModule;
 import com.voltskiya.mechanics.thirst.ThirstModule;
 import com.voltskiya.mechanics.tribe.TribeModule;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 
 public class VoltskiyaPlugin extends AbstractVoltPlugin {
 
@@ -38,7 +40,15 @@ public class VoltskiyaPlugin extends AbstractVoltPlugin {
         // save all online players occasionally
         Bukkit.getScheduler()
             .runTaskTimer(this, VoltskiyaPlayerManager::save, TICKS_BETWEEN_SAVE, 20 * TICKS_PER_INCREMENT);
+        List<NamespacedKey> removeBossBars = new ArrayList<>();
+        Bukkit.getBossBars().forEachRemaining(
+            (bar) -> {
+                if (bar.getTitle().equals(Display.AIR_BOSS_BAR_KEY))
+                    removeBossBars.add(bar.getKey());
+            }
+        );
 
+        removeBossBars.forEach(Bukkit::removeBossBar);
         Bukkit.getPluginManager().registerEvents(new VoltskiyaListener(), this);
     }
 

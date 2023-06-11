@@ -41,6 +41,11 @@ public class ThirstModule extends AbstractModule {
         return "Thirst";
     }
 
+    @Override
+    public boolean shouldEnable() {
+        return false;
+    }
+
     private void registerRecipes() {
         VoltskiyaRecipeManager.shaped(key("canteen"), Item.CANTEEN_EMPTY, new String[]{"L  ", "LIL", " L "},
             new VoltskiyaRecipeManager.IngredientMapping('L', Material.LEATHER),
