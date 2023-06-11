@@ -1,4 +1,4 @@
-package com.voltskiya.mechanics.player;
+package com.voltskiya.mechanics.physical.player;
 
 import apple.utilities.database.ajd.AppleAJD;
 import apple.utilities.database.ajd.AppleAJDTyped;
@@ -27,7 +27,7 @@ public final class VoltskiyaPlayerManager {
         synchronized (players) {
             players.remove(uuid);
         }
-        
+
     }
 
     public static VoltskiyaPlayer getPlayer(Player bukkitPlayer) {

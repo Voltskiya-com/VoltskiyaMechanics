@@ -1,52 +1,19 @@
-package com.voltskiya.mechanics.thirst;
+package com.voltskiya.mechanics.physical.thirst;
 
-import com.voltskiya.lib.AbstractModule;
 import com.voltskiya.mechanics.Item;
+import com.voltskiya.mechanics.VoltskiyaPlugin;
 import com.voltskiya.mechanics.VoltskiyaRecipeManager;
-import com.voltskiya.mechanics.thirst.config.ThirstConfig;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 
-public class ThirstModule extends AbstractModule {
+public class ThirstRecipes {
 
-    private static ThirstModule instance;
 
-    public ThirstModule() {
-        instance = this;
+    private static NamespacedKey key(String key) {
+        return VoltskiyaPlugin.get().namespacedKey("Thirst" + "." + key);
     }
 
-    public static ThirstModule get() {
-        return instance;
-    }
-
-    public static NamespacedKey key(String key) {
-        return get().getKey(key);
-    }
-
-    public void init() {
-        ThirstConfig.load();
-    }
-
-    public void enable() {
-        getPlugin().registerEvents(new ThirstListener());
-        new ThirstCommandACF();
-        registerRecipes();
-    }
-
-    public NamespacedKey getKey(String key) {
-        return getPlugin().namespacedKey(getName() + "." + key);
-    }
-
-    public String getName() {
-        return "Thirst";
-    }
-
-    @Override
-    public boolean shouldEnable() {
-        return false;
-    }
-
-    private void registerRecipes() {
+    public static void registerRecipes() {
         VoltskiyaRecipeManager.shaped(key("canteen"), Item.CANTEEN_EMPTY, new String[]{"L  ", "LIL", " L "},
             new VoltskiyaRecipeManager.IngredientMapping('L', Material.LEATHER),
             new VoltskiyaRecipeManager.IngredientMapping('I', Material.IRON_INGOT));

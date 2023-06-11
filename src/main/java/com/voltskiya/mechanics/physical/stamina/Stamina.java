@@ -1,6 +1,6 @@
-package com.voltskiya.mechanics.stamina;
+package com.voltskiya.mechanics.physical.stamina;
 
-import com.voltskiya.mechanics.player.VoltskiyaPlayer;
+import com.voltskiya.mechanics.physical.player.VoltskiyaPlayer;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;

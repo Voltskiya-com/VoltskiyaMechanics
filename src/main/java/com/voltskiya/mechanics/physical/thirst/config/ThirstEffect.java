@@ -1,4 +1,4 @@
-package com.voltskiya.mechanics.thirst.config;
+package com.voltskiya.mechanics.physical.thirst.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bukkit.NamespacedKey;
@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public class ThirstEffect {
+
     private static final int DEFAULT_DURATION = 40;
     private final String potion;
     private final int amplifier;

@@ -1,10 +1,9 @@
 package com.voltskiya.mechanics;
 
-import com.voltskiya.mechanics.thirst.config.ThirstConfig;
+import com.voltskiya.mechanics.physical.thirst.config.ThirstConfig;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -37,13 +36,13 @@ public enum Item {
     FILTERED_CANTEEN_FULL(Material.POTION, ThirstConfig.compute("filtered_canteen_full", false, 4)),
     BOTTLE_DIRTY(Material.POTION, ThirstConfig.compute("bottle_dirty", true, 1));
 
+    private static final NamespacedKey ITEM_KEY = VoltskiyaPlugin.get().namespacedKey("item_name");
     private final Material material;
     private final String id;
     private final int texture;
     private final Item.Tag<?, ?>[] tags;
     private final Component displayName;
     private final List<Component> lore;
-    private static final NamespacedKey ITEM_KEY = VoltskiyaPlugin.get().namespacedKey("item_name");
 
     Item(Material material, Item.ItemConfig config) {
         this.material = material;
@@ -67,6 +66,15 @@ public enum Item {
         } catch (IllegalArgumentException ignored) {
             return UNKNOWN;
         }
+    }
+
+    public static ItemStack getWaterBottle() {
+        ItemStack waterBottle = new ItemStack(Material.POTION);
+        PotionMeta pmeta = (PotionMeta) waterBottle.getItemMeta();
+        PotionData pdata = new PotionData(PotionType.WATER);
+        pmeta.setBasePotionData(pdata);
+        waterBottle.setItemMeta(pmeta);
+        return waterBottle;
     }
 
     public boolean is(ItemStack itemStack) {
@@ -100,15 +108,6 @@ public enum Item {
         return CANTEEN_DIRTY == this || SIMPLE_BOTTLE_DIRTY == this || BOTTLE_DIRTY == this;
     }
 
-    public static ItemStack getWaterBottle() {
-        ItemStack waterBottle = new ItemStack(Material.POTION);
-        PotionMeta pmeta = (PotionMeta) waterBottle.getItemMeta();
-        PotionData pdata = new PotionData(PotionType.WATER);
-        pmeta.setBasePotionData(pdata);
-        waterBottle.setItemMeta(pmeta);
-        return waterBottle;
-    }
-
     @AllArgsConstructor
     @Getter
     public abstract static class ItemConfig {
@@ -123,6 +122,7 @@ public enum Item {
 
     @AllArgsConstructor
     public static class Tag<T, Z> {
+
         private final NamespacedKey key;
         private final PersistentDataType<T, ? super Z> type;
         private final Z value;
@@ -133,6 +133,7 @@ public enum Item {
     }
 
     private static class ItemType implements PersistentDataType<String, Item> {
+
         private static final Item.ItemType ITEM = new Item.ItemType();
 
         @NotNull

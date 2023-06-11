@@ -1,4 +1,4 @@
-package com.voltskiya.mechanics.thirst;
+package com.voltskiya.mechanics.physical.thirst;
 
 import com.voltskiya.lib.acf.BaseCommand;
 import com.voltskiya.lib.acf.annotation.CommandAlias;
@@ -18,9 +18,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 @CommandAlias("thirst")
-public class ThirstCommandACF extends BaseCommand {
+public class ThirstCommand extends BaseCommand {
 
-    public ThirstCommandACF() {
+    public ThirstCommand() {
         VoltskiyaPlugin.get().registerCommand(this);
         VoltskiyaPlugin.get().getCommandManager().getCommandCompletions()
             .registerStaticCompletion("volt_items", Arrays.stream(Item.values()).map(Enum::name).toList());

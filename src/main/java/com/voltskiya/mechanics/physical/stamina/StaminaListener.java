@@ -1,7 +1,7 @@
-package com.voltskiya.mechanics.stamina;
+package com.voltskiya.mechanics.physical.stamina;
 
 import com.voltskiya.mechanics.VoltskiyaPlugin;
-import com.voltskiya.mechanics.player.VoltskiyaPlayerManager;
+import com.voltskiya.mechanics.physical.player.VoltskiyaPlayerManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

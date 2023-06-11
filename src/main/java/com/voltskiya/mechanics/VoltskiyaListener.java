@@ -1,6 +1,6 @@
 package com.voltskiya.mechanics;
 
-import com.voltskiya.mechanics.player.VoltskiyaPlayerManager;
+import com.voltskiya.mechanics.physical.player.VoltskiyaPlayerManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;

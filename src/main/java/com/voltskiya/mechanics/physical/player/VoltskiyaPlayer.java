@@ -1,8 +1,8 @@
-package com.voltskiya.mechanics.player;
+package com.voltskiya.mechanics.physical.player;
 
 import apple.utilities.database.SaveFileable;
 import com.voltskiya.mechanics.Display;
-import com.voltskiya.mechanics.stamina.Stamina;
+import com.voltskiya.mechanics.physical.stamina.Stamina;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

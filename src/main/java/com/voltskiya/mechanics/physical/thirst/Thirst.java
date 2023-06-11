@@ -1,17 +1,16 @@
-package com.voltskiya.mechanics.thirst;
+package com.voltskiya.mechanics.physical.thirst;
 
 import com.voltskiya.mechanics.Item;
 import com.voltskiya.mechanics.VoltskiyaItemStack;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
-import com.voltskiya.mechanics.thirst.config.ThirstConfig;
+import com.voltskiya.mechanics.physical.thirst.config.ThirstConfig;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 @NoArgsConstructor
 @Getter
@@ -52,7 +51,7 @@ public class Thirst {
 
 
     @Nullable
-    public ItemStack onConsume(VoltskiyaItemStack itemStack,  @Nullable ItemStack replacement) {
+    public ItemStack onConsume(VoltskiyaItemStack itemStack, @Nullable ItemStack replacement) {
         Item item = itemStack.getItem();
         ThirstConfig.ConsumableItemConfig itemConfig = ThirstConfig.get(item);
         if (null == itemConfig) {

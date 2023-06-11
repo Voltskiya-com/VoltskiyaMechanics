@@ -1,4 +1,4 @@
-package com.voltskiya.mechanics.thirst.config;
+package com.voltskiya.mechanics.physical.thirst.config;
 
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import java.util.Map;
@@ -8,9 +8,10 @@ import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
 public class DirtyWaterPotionEffect {
-    private String potion;
+
     private final int amplifier;
     private final int duration;
+    private String potion;
 
     public DirtyWaterPotionEffect() {
         potion = PotionEffectType.HERO_OF_THE_VILLAGE.getKey().asString();
@@ -29,7 +30,8 @@ public class DirtyWaterPotionEffect {
     public PotionEffect potion() {
         PotionEffectType effectType = PotionEffectType.getByKey(NamespacedKey.fromString(potion));
         if (null == effectType) {
-            VoltskiyaPlugin.get().getSLF4JLogger().error(String.format("%s is not a valid PotionEffectType in Thirst.DirtyWaterEffect", potion));
+            VoltskiyaPlugin.get().getSLF4JLogger()
+                .error(String.format("%s is not a valid PotionEffectType in Thirst.DirtyWaterEffect", potion));
             return new PotionEffect(Map.of());
         } else {
             return new PotionEffect(effectType, duration, amplifier);

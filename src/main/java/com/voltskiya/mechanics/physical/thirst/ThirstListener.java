@@ -1,7 +1,8 @@
-package com.voltskiya.mechanics.thirst;
+package com.voltskiya.mechanics.physical.thirst;
 
 import com.voltskiya.mechanics.Item;
 import com.voltskiya.mechanics.VoltskiyaItemStack;
+import com.voltskiya.mechanics.VoltskiyaPlugin;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -19,6 +20,10 @@ import org.bukkit.util.RayTraceResult;
 public class ThirstListener implements Listener {
 
     public static final double MAX_REACH_DISTANCE = 5.0D;
+
+    public ThirstListener() {
+        VoltskiyaPlugin.get().registerEvents(this);
+    }
 
     @EventHandler
     public void onCauldron(CauldronLevelChangeEvent e) {
