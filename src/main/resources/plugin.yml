@@ -2,5 +2,5 @@ name: VoltskiyaMechanics
 version: 1.0
 main: com.voltskiya.mechanics.VoltskiyaPlugin
 api-version: 1.19
-authors: [ ProfFeuerstein, appleptr16 ]
+authors: [ ProfFeuerstein, appleptr16, KarmaLover ]
 depend: [ WorldGuard, VoltPluginManager, VoltskiyaUtilities, LoadDependencies, AppleMCUtil, LuckPerms ]
