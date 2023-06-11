@@ -25,7 +25,7 @@ public interface TribeCommandInfo extends TribeCommandUtil {
             String rank = role.displayName();
             TextColor color = role.getColor();
             String playerName = member.getPlayer().getName();
-            String joined = DateTimeFormatter.ofPattern("dd'd/'mm'm/'uuuu'y'").format(member.getJoined().atOffset(ZoneOffset.UTC));
+            String joined = DateTimeFormatter.ofPattern("dd' 'MMM' 'uuuu").format(member.getJoined().atOffset(ZoneOffset.UTC));
             message.add(Component.text("[%s] %s - joined at %s".formatted(rank, playerName, joined), color));
         }
         player.sendMessage(Component.join(JoinConfiguration.newlines(), message));
