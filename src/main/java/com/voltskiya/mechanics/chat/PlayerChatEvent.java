@@ -1,6 +1,7 @@
 package com.voltskiya.mechanics.chat;
 
 import com.voltskiya.mechanics.VoltskiyaPlugin;
+import com.voltskiya.mechanics.tribe.query.TribeStorage;
 import dev.vankka.enhancedlegacytext.EnhancedLegacyText;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.audience.Audience;
@@ -26,7 +27,6 @@ import java.util.Comparator;
 import java.util.logging.Level;
 
 public class PlayerChatEvent implements Listener {
-    public static final Component MESSAGE_PREFIX = Component.text().append(Component.text("BetterChat ", NamedTextColor.AQUA), Component.text(">> ", NamedTextColor.DARK_GRAY)).build();
     public static final TextComponent CHAT_SEPARATOR = Component.text(" >> ", NamedTextColor.DARK_GRAY);
 
     public PlayerChatEvent() {
@@ -40,9 +40,12 @@ public class PlayerChatEvent implements Listener {
         Player player = event.getPlayer();
         if(!player.isOnline()) return;
 
+        String tribeTag = TribeStorage.findPlayer(player.getUniqueId()).getTribe().getTag();
+        Component tribeTagComponent = Component.text().append(Component.text(" [", NamedTextColor.DARK_GRAY), Component.text(tribeTag, NamedTextColor.AQUA), Component.text("]", NamedTextColor.DARK_GRAY)).build();
+
         event.setCancelled(true);
 
-        sendChatMessageBecauseFUCKMICROSOFT(event.getPlayer(), event.getPlayer().displayName(), event.message(), Audience.audience(Bukkit.getOnlinePlayers()));
+        sendChatMessageBecauseFUCKMICROSOFT(event.getPlayer(), event.getPlayer().displayName(), event.message(), Audience.audience(Bukkit.getOnlinePlayers()), tribeTagComponent);
     }
 
     public Component constructPrefixComponent(Player player) {
@@ -75,7 +78,7 @@ public class PlayerChatEvent implements Listener {
         return EnhancedLegacyText.get().parse(suffix);
     }
 
-    private void sendChatMessageBecauseFUCKMICROSOFT(@NotNull Player source, @NotNull Component sourceDisplayName, @NotNull Component message, @NotNull Audience viewer) {
+    private void sendChatMessageBecauseFUCKMICROSOFT(@NotNull Player source, @NotNull Component sourceDisplayName, @NotNull Component message, @NotNull Audience viewer, Component tribeTag) {
         Component prefix = constructPrefixComponent(source);
         Component suffix = constructSuffixComponent(source);
 
@@ -87,8 +90,12 @@ public class PlayerChatEvent implements Listener {
             message = EnhancedLegacyText.get().parse(messagePlain);
         }
 
-        //Component component = Component.join(JoinConfiguration.separator(CHAT_SEPARATOR), prefix.append(sourceDisplayName).append(suffix), message);
         Component component = Component.text().append(prefix, sourceDisplayName, suffix, CHAT_SEPARATOR, message).build();
+        //Component component = Component.join(JoinConfiguration.separator(CHAT_SEPARATOR), prefix.append(sourceDisplayName).append(suffix), message);
+        if (tribeTag != null) {
+            component = Component.text().append(prefix, sourceDisplayName, tribeTag, suffix, CHAT_SEPARATOR, message).build();
+        }
+
 
         viewer.sendMessage(component);
 
