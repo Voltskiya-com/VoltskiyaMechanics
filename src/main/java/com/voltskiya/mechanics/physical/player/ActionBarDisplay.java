@@ -1,7 +1,6 @@
 package com.voltskiya.mechanics.physical.player;
 
 import com.voltskiya.mechanics.VoltskiyaPlugin;
-import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
@@ -14,7 +13,6 @@ import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-@Getter
 public class ActionBarDisplay {
 
     public static final String AIR_BOSS_BAR_KEY = "Air";
