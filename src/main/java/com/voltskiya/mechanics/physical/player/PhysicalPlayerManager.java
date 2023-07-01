@@ -3,7 +3,7 @@ package com.voltskiya.mechanics.physical.player;
 import apple.utilities.database.ajd.AppleAJD;
 import apple.utilities.database.ajd.AppleAJDTyped;
 import com.voltskiya.lib.pmc.FileIOServiceNow;
-import com.voltskiya.mechanics.VoltskiyaPlugin;
+import com.voltskiya.mechanics.physical.PhysicalModule;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,9 +50,8 @@ public final class PhysicalPlayerManager {
         player = manager.loadFromFolderNow(PhysicalPlayer.getSaveFileName(uuid));
 
         if (player == null)
-            player = new PhysicalPlayer(bukkitPlayer);
-        else
-            player.onLoad(bukkitPlayer);
+            player = new PhysicalPlayer();
+        player.onLoad(bukkitPlayer);
         synchronized (players) {
             players.put(uuid, player);
         }
@@ -60,8 +59,8 @@ public final class PhysicalPlayerManager {
     }
 
     public static void load() {
-        File file = new File(VoltskiyaPlugin.get().getDataFolder(), "players");
-        manager = AppleAJD.createTyped(PhysicalPlayer.class, file, FileIOServiceNow.taskCreator());
+        File folder = PhysicalModule.get().getFile("players");
+        manager = AppleAJD.createTyped(PhysicalPlayer.class, folder, FileIOServiceNow.taskCreator());
         Bukkit.getOnlinePlayers().forEach(PhysicalPlayerManager::getPlayer);
     }
 

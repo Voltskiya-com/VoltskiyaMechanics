@@ -1,31 +1,22 @@
 package com.voltskiya.mechanics.physical.player;
 
 import apple.utilities.database.SaveFileable;
-import com.voltskiya.mechanics.Display;
 import com.voltskiya.mechanics.physical.stamina.Stamina;
 import com.voltskiya.mechanics.physical.thirst.Thirst;
 import java.util.UUID;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.bukkit.GameMode;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
-import org.bukkit.persistence.PersistentDataType;
-import org.jetbrains.annotations.NotNull;
 
-@NoArgsConstructor // for gson
-@Getter
 public class PhysicalPlayer implements SaveFileable {
 
-    private final transient Display display = new Display();
+    private final transient ActionBarDisplay display = new ActionBarDisplay();
+    private final Thirst thirst;
+    private final Stamina stamina;
     private transient Player player;
-    private Thirst thirst;
-    private Stamina stamina;
 
-    public PhysicalPlayer(@NotNull Player player) {
+    public PhysicalPlayer() {
         thirst = new Thirst();
         stamina = new Stamina();
-        onLoad(player);
     }
 
     public static String getSaveFileName(UUID uuid) {
@@ -34,21 +25,17 @@ public class PhysicalPlayer implements SaveFileable {
 
     void onLoad(Player player) {
         this.player = player;
-        thirst.onLoad(player);
-        stamina.onLoad(this);
-        display.onLoad(player);
+        this.thirst.onLoad(player);
+        this.stamina.onLoad(this);
+        this.display.onLoad(player);
     }
 
     void onTick() {
         if (GameMode.ADVENTURE != player.getGameMode() && GameMode.SURVIVAL != player.getGameMode()) return;
         stamina.onTick();
-//        thirst.onTick();
-        NamespacedKey key = new NamespacedKey("thirstcore", "thirst");
-        int maxThirst = 1000;
-        Integer playerThirst = player.getPersistentDataContainer().getOrDefault(key, PersistentDataType.INTEGER, maxThirst);
-        double thirstPercentage = (double) playerThirst / maxThirst;
+        thirst.onTick();
 
-        display.updateDisplay(thirstPercentage, stamina.getStaminaPercentage());
+        display.updateDisplay(thirst.getThirstPercentage(), stamina.getStaminaPercentage());
     }
 
     public void verifySprint() {
@@ -72,7 +59,15 @@ public class PhysicalPlayer implements SaveFileable {
         return getSaveFileName(player.getUniqueId());
     }
 
-//    public ItemStack onConsume(VoltskiyaItemStack itemStack, ItemStack replacement) {
-//        return thirst.onConsume(itemStack, replacement);
-//    }
+    public Thirst getThirst() {
+        return thirst;
+    }
+
+    public Stamina getStamina() {
+        return stamina;
+    }
+
+    public Player getPlayer() {
+        return this.player;
+    }
 }

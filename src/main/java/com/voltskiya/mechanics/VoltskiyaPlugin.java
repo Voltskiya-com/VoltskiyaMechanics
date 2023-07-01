@@ -5,6 +5,7 @@ import com.voltskiya.lib.AbstractVoltPlugin;
 import com.voltskiya.mechanics.chat.ChatModule;
 import com.voltskiya.mechanics.database.MechanicsDatabase;
 import com.voltskiya.mechanics.physical.PhysicalModule;
+import com.voltskiya.mechanics.physical.player.ActionBarDisplay;
 import com.voltskiya.mechanics.physical.player.PhysicalPlayerManager;
 import com.voltskiya.mechanics.physical.stamina.StaminaModule;
 import com.voltskiya.mechanics.tribe.TribeModule;
@@ -44,7 +45,7 @@ public class VoltskiyaPlugin extends AbstractVoltPlugin {
         List<NamespacedKey> removeBossBars = new ArrayList<>();
         Bukkit.getBossBars().forEachRemaining(
             (bar) -> {
-                if (bar.getTitle().equals(Display.AIR_BOSS_BAR_KEY))
+                if (bar.getTitle().equals(ActionBarDisplay.AIR_BOSS_BAR_KEY))
                     removeBossBars.add(bar.getKey());
             }
         );

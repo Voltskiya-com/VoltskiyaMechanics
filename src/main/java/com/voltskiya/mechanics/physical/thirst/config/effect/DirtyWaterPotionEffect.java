@@ -1,6 +1,6 @@
-package com.voltskiya.mechanics.physical.thirst.config;
+package com.voltskiya.mechanics.physical.thirst.config.effect;
 
-import com.voltskiya.mechanics.VoltskiyaPlugin;
+import com.voltskiya.mechanics.physical.PhysicalModule;
 import java.util.Map;
 import org.bukkit.NamespacedKey;
 import org.bukkit.potion.PotionEffect;
@@ -9,18 +9,17 @@ import org.jetbrains.annotations.NotNull;
 
 public class DirtyWaterPotionEffect {
 
-    private final int amplifier;
-    private final int duration;
-    private String potion;
+    protected int amplifier;
+    protected int duration;
+    protected String potion;
+    private PotionEffect cachedPotion;
 
     public DirtyWaterPotionEffect() {
-        potion = PotionEffectType.HERO_OF_THE_VILLAGE.getKey().asString();
         amplifier = 0;
         duration = 1;
     }
 
     public DirtyWaterPotionEffect(PotionEffectType potion, int amplifier, int duration) {
-        this.potion = PotionEffectType.HERO_OF_THE_VILLAGE.getKey().asString();
         this.potion = potion.getKey().asString();
         this.amplifier = amplifier;
         this.duration = duration;
@@ -28,14 +27,14 @@ public class DirtyWaterPotionEffect {
 
     @NotNull
     public PotionEffect potion() {
+        if (this.cachedPotion != null) return cachedPotion;
         PotionEffectType effectType = PotionEffectType.getByKey(NamespacedKey.fromString(potion));
-        if (null == effectType) {
-            VoltskiyaPlugin.get().getSLF4JLogger()
+        if (effectType == null) {
+            PhysicalModule.get().logger()
                 .error(String.format("%s is not a valid PotionEffectType in Thirst.DirtyWaterEffect", potion));
             return new PotionEffect(Map.of());
-        } else {
-            return new PotionEffect(effectType, duration, amplifier);
         }
+        return cachedPotion = new PotionEffect(effectType, duration, amplifier);
     }
 }
 

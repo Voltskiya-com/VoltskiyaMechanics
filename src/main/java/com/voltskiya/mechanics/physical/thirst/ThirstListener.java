@@ -1,21 +1,28 @@
 package com.voltskiya.mechanics.physical.thirst;
 
-import com.voltskiya.mechanics.Item;
-import com.voltskiya.mechanics.VoltskiyaItemStack;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
+import com.voltskiya.mechanics.physical.player.PhysicalPlayerManager;
+import com.voltskiya.mechanics.physical.thirst.config.ThirstConfig;
+import com.voltskiya.mechanics.physical.thirst.config.item.ConsumableThirstConfig;
+import com.voltskiya.mechanics.physical.thirst.item.ThirstKeys;
+import java.util.HashMap;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.CauldronLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.RayTraceResult;
+import org.jetbrains.annotations.Nullable;
 
 public class ThirstListener implements Listener {
 
@@ -25,72 +32,79 @@ public class ThirstListener implements Listener {
         VoltskiyaPlugin.get().registerEvents(this);
     }
 
+    public static boolean isClickingWater(Player player) {
+        Location location = player.getEyeLocation();
+        RayTraceResult raytrace = location.getWorld()
+            .rayTraceBlocks(location, location.getDirection(), MAX_REACH_DISTANCE, FluidCollisionMode.SOURCE_ONLY, true);
+        if (raytrace == null) return false;
+        Block block = raytrace.getHitBlock();
+        if (block == null) return false;
+        return block.getType() == Material.WATER;
+    }
+
     @EventHandler
     public void onCauldron(CauldronLevelChangeEvent e) {
         // TODO fill bottle with appropriate amount of clean water
     }
 
     @EventHandler
-    public void onClickWater(PlayerInteractEvent e) {
-        if (EquipmentSlot.HAND != e.getHand())
-            return;
-        Action action = e.getAction();
-        ItemStack itemStack = e.getItem();
-        if (null == itemStack)
-            return;
-        Player player = e.getPlayer();
-        if (Action.LEFT_CLICK_AIR == action) {
-            emptyContainer(itemStack, player);
-            return;
-        }
-        if (!action.isRightClick())
-            return;
-        Location location = player.getEyeLocation();
-        RayTraceResult raytrace = location.getWorld()
-            .rayTraceBlocks(location, location.getDirection(), MAX_REACH_DISTANCE, FluidCollisionMode.SOURCE_ONLY, true);
-        if (null == raytrace)
-            return;
-        Block block = raytrace.getHitBlock();
-        if (null == block)
-            return;
-        if (Material.WATER == block.getType())
-            e.setCancelled(fillContainer(itemStack, player));
-    }
+    public void onConsume(PlayerItemConsumeEvent event) {
+        ItemStack consumed = event.getItem();
+        ConsumableThirstConfig config = ThirstConfig.get().fromItem(consumed);
+        if (config == null) return;
 
-    private boolean fillContainer(ItemStack bukkitItem, Player player) {
-        VoltskiyaItemStack voltskiyaItemStack = new VoltskiyaItemStack(bukkitItem);
-        Item item = voltskiyaItemStack.getItem();
-        if (Item.UNKNOWN == item && Material.GLASS_BOTTLE == bukkitItem.getType()) {
-            voltskiyaItemStack.change1To(Item.BOTTLE_DIRTY, player);
-            return true;
+        Player player = event.getPlayer();
+
+        int consumeAmount = config.getConsumeAmount();
+        boolean isDirty = ThirstKeys.isDirty(consumed);
+        if (isDirty) {
+            player.addPotionEffects(ThirstConfig.get().getDirtyEffects());
+            consumeAmount /= 2;
         }
-        switch (item) {
-            case CANTEEN_EMPTY:
-                voltskiyaItemStack.change1To(Item.CANTEEN_DIRTY, player);
-                return true;
-            case SIMPLE_BOTTLE_EMPTY:
-                voltskiyaItemStack.change1To(Item.SIMPLE_BOTTLE_DIRTY, player);
-                return true;
-            case FILTERED_CANTEEN_EMPTY:
-                voltskiyaItemStack.change1To(Item.FILTERED_CANTEEN_FULL, player);
-                return true;
-            default:
-                return false;
+
+        PhysicalPlayerManager.getPlayer(player).getThirst().drink(consumeAmount);
+        int usesCount = ThirstKeys.getUses(consumed);
+        ItemStack replacement = consumed.clone();
+        if (usesCount > 1) {
+            int usesLeft = usesCount - 1;
+            config.getThirstItem().toItemStack(replacement, isDirty, usesLeft);
+            event.setReplacement(replacement);
+        } else if (usesCount == 1) {
+            config.empty(replacement);
+            event.setReplacement(replacement);
         }
     }
 
-    private void emptyContainer(ItemStack bukkitItem, Player player) {
-        VoltskiyaItemStack itemStack = new VoltskiyaItemStack(bukkitItem);
-        if (Material.POTION != itemStack.getItemStack().getType())
-            return;
-        Item item = itemStack.getItem();
-        if (Item.BOTTLE_DIRTY == item)
-            itemStack.getItemStack().setType(Material.GLASS_BOTTLE);
-        else if (Item.SIMPLE_BOTTLE_DIRTY == item || Item.SIMPLE_BOTTLE_FULL == item)
-            itemStack.change1To(Item.SIMPLE_BOTTLE_EMPTY, player);
-        else if (Item.CANTEEN_DIRTY == item || Item.CANTEEN_FULL == item)
-            itemStack.change1To(Item.CANTEEN_EMPTY, player);
-        else if (Item.FILTERED_CANTEEN_FULL == item)
-            itemStack.change1To(Item.FILTERED_CANTEEN_EMPTY, player);
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onClickWater(PlayerInteractEvent event) {
+        ItemStack item = event.getItem();
+        ConsumableThirstConfig config = ThirstConfig.get().fromItem(item);
+        if (config == null || item == null) return;
+
+        Player player = event.getPlayer();
+        Action action = event.getAction();
+        if (action == Action.LEFT_CLICK_AIR && player.isSneaking()) {
+            config.empty(item);
+        } else if (action.isRightClick() && isClickingWater(player)) {
+            boolean hasUses = ThirstKeys.getUses(item) != 0;
+            boolean wrongHand = event.getHand() != EquipmentSlot.HAND;
+            if (hasUses || wrongHand) {
+                event.setCancelled(true);
+                return;
+            }
+            fillContainer(item, config, true, player);
+        } else return;
+        event.setCancelled(true);
     }
+
+    private void fillContainer(ItemStack item, ConsumableThirstConfig config, boolean isDirty, Player player) {
+        @Nullable ItemStack overflow = config.fill(item, isDirty);
+        if (overflow == null) return;
+        HashMap<Integer, ItemStack> failed = player.getInventory().addItem(overflow);
+        if (failed.isEmpty()) return;
+        World world = player.getWorld();
+        Location location = player.getLocation();
+        failed.values().forEach(drop -> world.dropItemNaturally(location, drop));
+    }
+
 }
