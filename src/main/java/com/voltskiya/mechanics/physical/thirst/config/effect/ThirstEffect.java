@@ -1,13 +1,13 @@
-package com.voltskiya.mechanics.thirst.config;
+package com.voltskiya.mechanics.physical.thirst.config.effect;
 
-import lombok.extern.slf4j.Slf4j;
+import com.voltskiya.mechanics.physical.PhysicalModule;
 import org.bukkit.NamespacedKey;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
-@Slf4j
 public class ThirstEffect {
+
     private static final int DEFAULT_DURATION = 40;
     private final String potion;
     private final int amplifier;
@@ -32,7 +32,7 @@ public class ThirstEffect {
     public PotionEffect potion() {
         PotionEffectType effectType = PotionEffectType.getByKey(NamespacedKey.fromString(potion));
         if (null == effectType) {
-            log.error("{} is not a valid PotionEffectType in ThirstEffect", potion);
+            PhysicalModule.get().logger().error("%s is not a valid PotionEffectType in ThirstEffect".formatted(potion));
             return PotionEffectType.HERO_OF_THE_VILLAGE.createEffect(0, 0);
         }
         return new PotionEffect(effectType, 40, amplifier, true);

@@ -1,4 +1,4 @@
-package com.voltskiya.mechanics.stamina;
+package com.voltskiya.mechanics.physical.stamina;
 
 import com.voltskiya.lib.AbstractModule;
 import com.voltskiya.lib.configs.factory.AppleConfigLike;
@@ -19,7 +19,7 @@ public class StaminaModule extends AbstractModule {
 
     @Override
     public void enable() {
-        new StaminaListener();
+
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.voltskiya.mechanics.stamina;
+package com.voltskiya.mechanics.physical.stamina;
 
 public final class StaminaConfig {
 

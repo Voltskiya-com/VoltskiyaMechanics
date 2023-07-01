@@ -1,5 +1,6 @@
-package com.voltskiya.mechanics;
+package com.voltskiya.mechanics.physical.player;
 
+import com.voltskiya.mechanics.VoltskiyaPlugin;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -14,7 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 @Getter
-public class Display {
+public class ActionBarDisplay {
 
     public static final String AIR_BOSS_BAR_KEY = "Air";
     private static final Bar thirstBar = new Bar("\uf003", "\uf004", "\uf005", false);
