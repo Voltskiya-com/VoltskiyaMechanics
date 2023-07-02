@@ -18,7 +18,8 @@ public final class PhysicalPlayerManager {
 
     public static void remove(UUID uuid) {
         synchronized (players) {
-            players.remove(uuid);
+            PhysicalPlayer removed = players.remove(uuid);
+            if (removed != null) manager.saveInFolder(removed);
         }
     }
 

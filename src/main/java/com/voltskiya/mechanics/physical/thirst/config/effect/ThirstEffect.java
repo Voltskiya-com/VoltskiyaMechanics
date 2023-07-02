@@ -2,6 +2,7 @@ package com.voltskiya.mechanics.physical.thirst.config.effect;
 
 import com.voltskiya.mechanics.physical.PhysicalModule;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +14,7 @@ public class ThirstEffect {
     private final int amplifier;
     private final int thirstLowerBound;
     private final int thirstUpperBound;
+    private transient PotionEffect cachedPotion;
 
     public ThirstEffect() {
         potion = PotionEffectType.HERO_OF_THE_VILLAGE.getKey().asString();
@@ -30,15 +32,18 @@ public class ThirstEffect {
 
     @NotNull
     public PotionEffect potion() {
+        if (cachedPotion != null) return cachedPotion;
         PotionEffectType effectType = PotionEffectType.getByKey(NamespacedKey.fromString(potion));
         if (null == effectType) {
             PhysicalModule.get().logger().error("%s is not a valid PotionEffectType in ThirstEffect".formatted(potion));
-            return PotionEffectType.HERO_OF_THE_VILLAGE.createEffect(0, 0);
+            return this.cachedPotion = PotionEffectType.HERO_OF_THE_VILLAGE.createEffect(0, 0);
         }
-        return new PotionEffect(effectType, 40, amplifier, true);
+        return this.cachedPotion = new PotionEffect(effectType, 40, amplifier, true);
     }
 
-    public boolean shouldActivate(int thirstLevel) {
+    public boolean shouldActivate(Player player, int thirstLevel) {
+        PotionEffect active = player.getPotionEffect(this.potion().getType());
+        if (active != null && active.getDuration() > PhysicalModule.TICKS_PER_INCREMENT) return false;
         return thirstLowerBound <= thirstLevel && thirstLevel <= thirstUpperBound;
     }
 }

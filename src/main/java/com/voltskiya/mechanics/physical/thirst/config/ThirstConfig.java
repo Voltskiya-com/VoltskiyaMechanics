@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -65,10 +66,10 @@ public class ThirstConfig implements IAppleConfigInit {
         return defaultConsumables.get(material);
     }
 
-    public List<PotionEffect> getPotionEffects(int thirstLevel) {
+    public List<PotionEffect> getPotionEffects(Player player, int thirstLevel) {
         return thirstEffects
             .stream()
-            .filter(effect -> effect.shouldActivate(thirstLevel))
+            .filter(effect -> effect.shouldActivate(player, thirstLevel))
             .map(ThirstEffect::potion)
             .toList();
     }

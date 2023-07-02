@@ -24,6 +24,4 @@ public class StaminaListener implements Listener {
             stamina.setJumping();
         }
     }
-
-
 }

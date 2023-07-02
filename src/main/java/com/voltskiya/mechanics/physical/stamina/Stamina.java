@@ -1,19 +1,19 @@
 package com.voltskiya.mechanics.physical.stamina;
 
 import com.voltskiya.mechanics.physical.player.PhysicalPlayer;
+import com.voltskiya.mechanics.physical.player.PhysicalPlayerPart;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-public class Stamina {
+public class Stamina extends PhysicalPlayerPart {
 
     public static final int MAX_STAMINA = 20_000;
     public static final int NO_REGEN_AT_0_STAMINA_TICKS = 5 * 20;
     public static final PotionEffect LOW_SPRINT_EFFECT = PotionEffectType.HUNGER.createEffect(30, 0);
     protected int stamina = MAX_STAMINA;
     protected int noRegenTimer = 0;
-    private transient PhysicalPlayer player;
     private transient boolean isJumping = false;
     private transient Location lastLocation;
 
@@ -29,22 +29,24 @@ public class Stamina {
         }
     }
 
+    @Override
     public void onLoad(PhysicalPlayer player) {
-        this.player = player;
+        super.onLoad(player);
         lastLocation = player.getPlayer().getLocation();
     }
 
+    @Override
     public void onTick() {
         if (updateLocation()) return;
         if (this.noRegenTimer != 0) this.noRegenTimer--;
         int increment = calcStaminaIncrement();
         addStamina(increment);
         isJumping = false;
-        player.verifySprint();
+        getPhysical().verifySprint();
     }
 
     private boolean updateLocation() {
-        Location location = player.getPlayer().getLocation();
+        Location location = getPlayer().getLocation();
         boolean isSameWorld = location.getWorld().getUID().equals(lastLocation.getWorld().getUID());
         if (!isSameWorld) {
             lastLocation = location;
@@ -53,10 +55,10 @@ public class Stamina {
         return false;
     }
 
-    private int calcStaminaIncrement() {
-        Player player = this.player.getPlayer();
-        Location location = player.getLocation();
 
+    private int calcStaminaIncrement() {
+        Player player = this.getPlayer();
+        Location location = player.getLocation();
         boolean isStanding = location.distanceSquared(lastLocation) == 0;
         lastLocation = location;
         boolean isJumping = this.isJumping();
@@ -77,8 +79,9 @@ public class Stamina {
         return this.isJumping;
     }
 
-    public void onDeath() {
-        stamina = MAX_STAMINA;
+    @Override
+    protected void onDeath() {
+        this.stamina = MAX_STAMINA;
     }
 
     public double getStaminaPercentage() {

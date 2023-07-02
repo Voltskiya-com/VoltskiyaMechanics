@@ -12,7 +12,7 @@ public class DirtyWaterPotionEffect {
     protected int amplifier;
     protected int duration;
     protected String potion;
-    private PotionEffect cachedPotion;
+    protected transient PotionEffect cachedPotion;
 
     public DirtyWaterPotionEffect() {
         amplifier = 0;

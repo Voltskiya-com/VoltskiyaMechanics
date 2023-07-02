@@ -1,37 +1,34 @@
 package com.voltskiya.mechanics.physical.thirst;
 
 import com.voltskiya.mechanics.VoltskiyaPlugin;
+import com.voltskiya.mechanics.physical.player.PhysicalPlayerPart;
 import com.voltskiya.mechanics.physical.thirst.config.ThirstConfig;
 import java.util.List;
-import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 
-public class Thirst {
+public class Thirst extends PhysicalPlayerPart {
 
     public static final int MAX_THIRST = 100000;
     public static final int MIN_THIRST = 0;
 
-    private transient Player player;
     private int thirst = MAX_THIRST;
     private boolean isThirsty = true;
 
     public Thirst() {
     }
 
-    public void onLoad(Player player) {
-        this.player = player;
-    }
-
+    @Override
     public void onTick() {
         if (!isThirsty)
             return;
         if (MIN_THIRST < thirst)
             thirst = Math.max(MIN_THIRST, thirst - ThirstConfig.get().getThirstRate());
-        List<PotionEffect> effectsToAdd = ThirstConfig.get().getPotionEffects(thirst);
+        List<PotionEffect> effectsToAdd = ThirstConfig.get().getPotionEffects(getPlayer(), thirst);
         if (!effectsToAdd.isEmpty())
-            VoltskiyaPlugin.get().scheduleSyncDelayedTask(() -> player.addPotionEffects(effectsToAdd));
+            VoltskiyaPlugin.get().scheduleSyncDelayedTask(() -> getPlayer().addPotionEffects(effectsToAdd));
     }
 
+    @Override
     public void onDeath() {
         thirst = MAX_THIRST;
     }
