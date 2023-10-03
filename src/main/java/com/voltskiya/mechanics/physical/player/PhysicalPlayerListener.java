@@ -5,6 +5,7 @@ import com.voltskiya.mechanics.physical.PhysicalRecipes;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
@@ -35,7 +36,7 @@ public class PhysicalPlayerListener implements Listener {
         PhysicalPlayerManager.fetchPlayer(player);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onChangeGameMode(PlayerGameModeChangeEvent e) {
         if (!PlayerUtils.isSurvival(e.getNewGameMode()))
             e.getPlayer().sendActionBar(Component.empty()); //Disables the display when in creative

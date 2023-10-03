@@ -1,7 +1,6 @@
 package com.voltskiya.mechanics.physical.thirst.config;
 
-import com.voltskiya.lib.configs.data.config.AppleConfig;
-import com.voltskiya.lib.configs.data.config.init.IAppleConfigInit;
+import com.voltskiya.lib.configs.data.config.init.AppleConfigInit;
 import com.voltskiya.mechanics.physical.thirst.config.effect.DirtyWaterPotionEffect;
 import com.voltskiya.mechanics.physical.thirst.config.effect.ThirstEffect;
 import com.voltskiya.mechanics.physical.thirst.config.item.ConsumableThirstConfig;
@@ -21,7 +20,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
 
-public class ThirstConfig implements IAppleConfigInit {
+public class ThirstConfig extends AppleConfigInit {
 
 
     private static ThirstConfig instance;
@@ -50,7 +49,7 @@ public class ThirstConfig implements IAppleConfigInit {
     }
 
     @Override
-    public void setManager(AppleConfig<?> manager) {
+    public void onInitConfig() {
         defaultConsumables.forEach((material, config) -> config.load(material));
         keyedConsumables.forEach((key, config) -> config.load(key));
     }

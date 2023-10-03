@@ -6,15 +6,15 @@ import com.voltskiya.mechanics.physical.temperature.Temperature;
 import com.voltskiya.mechanics.physical.thirst.Thirst;
 import java.util.UUID;
 import java.util.function.Consumer;
-import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+import voltskiya.apple.utilities.minecraft.player.PlayerUtils;
 
 public class PhysicalPlayer implements SaveFileable {
 
     private final transient ActionBarDisplay display = new ActionBarDisplay();
-    private final Thirst thirst;
-    private final Stamina stamina;
-    private final Temperature temperature;
+    protected Thirst thirst;
+    protected Stamina stamina;
+    protected Temperature temperature;
     private transient Player player;
 
     public PhysicalPlayer() {
@@ -34,10 +34,10 @@ public class PhysicalPlayer implements SaveFileable {
     }
 
     void onTick() {
-        if (GameMode.ADVENTURE != player.getGameMode() && GameMode.SURVIVAL != player.getGameMode()) return;
+        if (!PlayerUtils.isSurvival(player)) return;
         toEachPart(PhysicalPlayerPart::onTick);
 
-        display.updateDisplay(thirst.getThirstPercentage(), stamina.getStaminaPercentage());
+        display.updateDisplay(thirst.getThirstPercentage(), stamina.getStaminaPercentage(), temperature.getTemperature());
     }
 
 

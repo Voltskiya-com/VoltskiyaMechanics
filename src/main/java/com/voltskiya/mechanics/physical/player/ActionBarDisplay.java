@@ -12,23 +12,23 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 
 public class ActionBarDisplay {
 
-    public static final String AIR_BOSS_BAR_KEY = "Air";
+    public static final String AIR_BOSS_BAR_TITLE = "Air";
+    public static final String AIR_BOSS_BAR_KEY = "air.";
+    public static final String TEMPERATURE_BOSS_BAR_KEY = "temperature.";
     private static final Bar thirstBar = new Bar("\uf003", "\uf004", "\uf005", false);
     private static final Bar staminaBar = new Bar("\uf006", "\uf007", "\uf008", true);
 
     private Player player;
     private BukkitTask updateAirTask;
     private KeyedBossBar bossBarAir;
+    private KeyedBossBar bossBarTemperature;
 
-    public void updateDisplay(double thirstPercentage, double staminaPercentage) {
-        AttributeInstance armorAttribute = player.getAttribute(Attribute.GENERIC_ARMOR);
-        int armorValue = null == armorAttribute ? 0 : (int) armorAttribute.getValue();
-        StringBuilder armorStr = new StringBuilder();
-        for (char c : String.format("%02d", armorValue).toCharArray())
-            armorStr.append((char) (c + '\uf010' - 48));
+    public void updateDisplay(double thirstPercentage, double staminaPercentage, double temperature) {
+        StringBuilder armorStr = calcArmorStr();
 
         Component thirstDisplay = thirstBar.display(thirstPercentage);
         Component staminaDisplay = staminaBar.display(staminaPercentage);
@@ -38,13 +38,32 @@ public class ActionBarDisplay {
         TextComponent backwardsSpace = Component.text("\uf001".repeat(2));
         Component armor = armor1.append(backwardsSpace).append(armorIcon).append(backwardsSpace).append(armor2);
         player.sendActionBar(thirstDisplay.append(Component.space()).append(armor).append(Component.space()).append(staminaDisplay));
+
+        this.bossBarTemperature.addPlayer(player);
+        double temperaturePercentage = Math.min(1, Math.max(0, .5 + temperature / 200));
+        this.bossBarTemperature.setProgress(temperaturePercentage);
+        this.bossBarTemperature.setTitle("Temperature: %d".formatted((int) temperature));
+    }
+
+    @NotNull
+    private StringBuilder calcArmorStr() {
+        AttributeInstance armorAttribute = player.getAttribute(Attribute.GENERIC_ARMOR);
+        int armorValue = null == armorAttribute ? 0 : (int) armorAttribute.getValue();
+        StringBuilder armorStr = new StringBuilder();
+        for (char c : String.format("%02d", armorValue).toCharArray())
+            armorStr.append((char) (c + '\uf010' - 48));
+        return armorStr;
     }
 
     public void onLoad(Player player) {
-        NamespacedKey key = new NamespacedKey(VoltskiyaPlugin.get(), "air." + player.getUniqueId());
-        this.bossBarAir = Bukkit.createBossBar(key, "Air", BarColor.BLUE, BarStyle.SOLID);
         this.player = player;
+
+        NamespacedKey airKey = VoltskiyaPlugin.get().namespacedKey(AIR_BOSS_BAR_KEY + player.getUniqueId());
+        this.bossBarAir = Bukkit.createBossBar(airKey, "Air", BarColor.BLUE, BarStyle.SOLID);
         this.updateAirTask = Bukkit.getScheduler().runTaskTimer(VoltskiyaPlugin.get(), this::updateAir, 0L, 1L);
+
+        NamespacedKey temperatureKey = VoltskiyaPlugin.get().namespacedKey(TEMPERATURE_BOSS_BAR_KEY + player.getUniqueId());
+        this.bossBarTemperature = Bukkit.createBossBar(temperatureKey, "Temperature", BarColor.RED, BarStyle.SEGMENTED_20);
     }
 
     private void updateAir() {
@@ -57,7 +76,10 @@ public class ActionBarDisplay {
     }
 
     public void remove() {
+        bossBarAir.removeAll();
         Bukkit.removeBossBar(bossBarAir.getKey());
+        bossBarTemperature.removeAll();
+        Bukkit.removeBossBar(this.bossBarTemperature.getKey());
         updateAirTask.cancel();
     }
 

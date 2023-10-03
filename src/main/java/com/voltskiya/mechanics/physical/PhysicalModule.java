@@ -1,22 +1,29 @@
 package com.voltskiya.mechanics.physical;
 
+import static com.voltskiya.mechanics.physical.player.ActionBarDisplay.AIR_BOSS_BAR_KEY;
+import static com.voltskiya.mechanics.physical.player.ActionBarDisplay.AIR_BOSS_BAR_TITLE;
+import static com.voltskiya.mechanics.physical.player.ActionBarDisplay.TEMPERATURE_BOSS_BAR_KEY;
+
+import apple.mc.utilities.data.serialize.GsonSerializeMC;
 import com.voltskiya.lib.AbstractModule;
 import com.voltskiya.lib.configs.factory.AppleConfigLike;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
-import com.voltskiya.mechanics.physical.player.ActionBarDisplay;
 import com.voltskiya.mechanics.physical.player.PhysicalPlayerListener;
 import com.voltskiya.mechanics.physical.player.PhysicalPlayerManager;
 import com.voltskiya.mechanics.physical.stamina.StaminaConfig;
 import com.voltskiya.mechanics.physical.stamina.StaminaListener;
+import com.voltskiya.mechanics.physical.temperature.config.biome.TemperatureBiomeDB;
+import com.voltskiya.mechanics.physical.temperature.config.blocks.TemperatureBlocksConfig;
+import com.voltskiya.mechanics.physical.temperature.util.daily.VarDailyTimerListener;
 import com.voltskiya.mechanics.physical.thirst.ThirstCommand;
 import com.voltskiya.mechanics.physical.thirst.ThirstListener;
 import com.voltskiya.mechanics.physical.thirst.config.ThirstConfig;
 import com.voltskiya.mechanics.physical.thirst.item.ThirstRecipes;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.boss.KeyedBossBar;
 
 public class PhysicalModule extends AbstractModule {
 
@@ -35,14 +42,18 @@ public class PhysicalModule extends AbstractModule {
 
     private static void removeAirBar() {
         List<NamespacedKey> removeBossBars = new ArrayList<>();
-        Bukkit.getBossBars().forEachRemaining(
-            (bar) -> {
-                if (bar.getTitle().equals(ActionBarDisplay.AIR_BOSS_BAR_KEY))
-                    removeBossBars.add(bar.getKey());
-            }
-        );
-
+        Bukkit.getBossBars().forEachRemaining((bar) -> {
+            if (shouldRemoveBossBar(bar)) removeBossBars.add(bar.getKey());
+        });
         removeBossBars.forEach(Bukkit::removeBossBar);
+    }
+
+    private static boolean shouldRemoveBossBar(KeyedBossBar bar) {
+        String key = bar.getKey().getKey();
+        String title = bar.getTitle();
+        return title.equals(AIR_BOSS_BAR_TITLE) ||
+            key.startsWith(AIR_BOSS_BAR_KEY) ||
+            key.startsWith(TEMPERATURE_BOSS_BAR_KEY);
     }
 
     @Override
@@ -56,6 +67,8 @@ public class PhysicalModule extends AbstractModule {
         new StaminaListener();
 
         new PhysicalPlayerListener();
+
+        new VarDailyTimerListener();
     }
 
     public void enableTasks() {
@@ -65,7 +78,6 @@ public class PhysicalModule extends AbstractModule {
         // save all online players occasionally
         Bukkit.getScheduler()
             .runTaskTimer(VoltskiyaPlugin.get(), PhysicalPlayerManager::save, TICKS_BETWEEN_SAVE, TICKS_BETWEEN_SAVE);
-
         removeAirBar();
     }
 
@@ -77,11 +89,12 @@ public class PhysicalModule extends AbstractModule {
     @Override
     public List<AppleConfigLike> getConfigs() {
         return List.of(configJson(ThirstConfig.class, "ThirstConfig"),
-            configJson(StaminaConfig.class, "StaminaConfig")
+            configJson(StaminaConfig.class, "StaminaConfig"),
+            configFolder("Temperature",
+                configJson(TemperatureBlocksConfig.class, "TemperatureBlocks"),
+                configJson(TemperatureBiomeDB.class, "TemperatureBiomes")
+                    .asJson(GsonSerializeMC.completeGsonBuilderMC().create())
+            )
         );
-    }
-
-    public File getThirstFile(String children) {
-        return this.getFile("Thirst", children);
     }
 }
