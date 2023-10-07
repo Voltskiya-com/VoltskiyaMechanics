@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.TimeSkipEvent;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +47,7 @@ public class VarDailyTimerListener implements Listener {
     }
 
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDayChange(TimeSkipEvent event) {
         World world = event.getWorld();
         VoltskiyaPlugin.get().scheduleSyncDelayedTask(() -> updateDay(world));

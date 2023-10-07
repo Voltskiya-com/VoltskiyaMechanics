@@ -24,15 +24,24 @@ public class Temperature extends PhysicalPlayerPart {
     // range: [0, 100]
     protected double wetness = 0;
     protected transient TemperatureCalc calc;
+    private TemperatureVisual playerVisual;
 
     private static TemperatureConsts consts() {
         return TemperatureConsts.get();
     }
 
+    private static double overshootDirection(double diff, double minOrMax) {
+        // magic number just meant to overshoot towards finalGoal
+        double overshootDistance = 0.10;
+        double overshoot = Math.copySign(overshootDistance * minOrMax, diff);
+        return diff + overshoot;
+    }
+
     @Override
     protected void onLoad(PhysicalPlayer player) {
         super.onLoad(player);
-        calc = new TemperatureCalc(this.getPhysical());
+        this.calc = new TemperatureCalc(this.getPhysical());
+        this.playerVisual = new TemperatureVisual(this.getPlayer());
     }
 
     @Override
@@ -70,12 +79,12 @@ public class Temperature extends PhysicalPlayerPart {
         calc.setWetness(TemperatureChecks.wetness(calc));
 
         calc.finalizeWindKph();
-        calc.finalizeAirTemp();
         calc.finalizeDryingRate();
+        calc.finalizeAirTemp();
         calc.finalizeHeatTransferRate();
 
         this.doWetTick();
-        this.doTemperatureTick();
+        this.doHeatTick();
 
     }
 
@@ -83,67 +92,44 @@ public class Temperature extends PhysicalPlayerPart {
         return calc.getFinalAirTemp() - this.temperature;
     }
 
-    private void doTemperatureTick() {
-        this.temperature += getHeatDirection() * calc.getFinalHeatTransferRate();
+    private void doHeatTick() {
+        double rate = calc.getFinalHeatTransferRate();
+        double goal = calc.getFinalAirTemp();
+        double max = consts().temperature.effectiveMaxAirTemp;
+
+        this.temperature = doTick(rate, this.temperature, goal, max);
     }
 
-    public double getWetDirection() {
+    public double getWetnessDirection() {
         return calc.getFinalWetness() - this.wetness;
     }
 
     private void doWetTick() {
-        this.wetness += getWetDirection() * calc.getFinalWetTransferRate();
-        System.out.println(this.getWetDirection());
-        System.out.println(this.wetness);
-        double maxWetness = consts().wetness.maxWetness;
-        if (wetness < 0) wetness = 0;
-        else if (wetness > maxWetness) wetness = maxWetness;
+        double rate = calc.getFinalWetTransferRate();
+        double goal = calc.getFinalWetness();
+        double max = consts().wetness.maxWetness;
+
+        this.wetness = doTick(rate, this.wetness, goal, max);
+
+        if (this.wetness < 0) this.wetness = 0;
+        else if (this.wetness > max) this.wetness = max;
     }
 
-    public void doTemperatureChecks() {
-//        Location location = this.getPlayer().getLocation();
-//        Biome minecraftBiome = location.getBlock().getComputedBiome();
-//        @Nullable TemperatureBiome currentBiome = TemperatureBiomeDB.get().getBiomeOrFallback(minecraftBiome);
-//        double airTemp = currentBiome.getTypicalTempNow(location.getWorld().getTime());
-//        double insideness = TemperatureChecks.insideness(location);
-//        double blockHeatSource = TemperatureChecks.sources(location);
-//        double wind = TemperatureChecks.wind(currentBiome, location);
-//        double wetness = TemperatureChecks.wetness(player);
-//
-//        TemperatureChecks.ClothingTemperature clothing = TemperatureChecks.clothing(player);
-//        double finalBlockHeatSource = (1 + insideness) * blockHeatSource;
-//        double finalWind = clothing.resistWind(wind * (1 - insideness));
-//        double finalWetness = clothing.resistWet(wetness);
-//        double playerWetness = this.playerInfo.doWetTick(finalWetness);
-//
-//        double airTemp2 = airTemp + finalBlockHeatSource;
-//
-//        double fluidFactor = TemperatureChecks.fluidFactor(finalWind, playerWetness);
-//        double boundaries = 150;
-//        double airTemp3 = airTemp2 - (
-//            (boundaries / (1 + Math.pow(Math.E, (-airTemp2 / boundaries)))) * fluidFactor / 10);
-//
-//        double feltTemperature = clothing.resistTemp(airTemp3);
-//        this.playerInfo.temperature += (feltTemperature - this.playerInfo.temperature)
-//            * TmwWatchConfig.getCheckInterval().heatTransferConstant;
-//        this.playerInfo.doTemperatureEffects(this.playerVisual);
-//        TextComponent msg = new TextComponent();
-//        msg.setText(String.format("final temp - %.2f, biome - %s", this.playerInfo.temperature,
-//            currentBiome == null ? "null" : currentBiome.getName()));
-//        this.player.sendActionBar(msg);
-//        if (--this.saveInterval <= 0) {
-//            this.saveInterval = SAVE_INTERVAL;
-//            this.playerInfo.saveThreaded();
-//        }
+    private double doTick(double rate, double current, double goal, double range) {
+        if (rate == 0) return current;
+        boolean isPos = rate > 0;
+
+        double overshotDirection = overshootDirection(goal - current, range);
+        double direction = Math.copySign(overshotDirection * rate, isPos ? 1 : -1);
+
+        boolean isGoalNearby = Math.abs(goal - current) < Math.abs(direction);
+        return isGoalNearby ? goal : current + direction;
     }
 
     public void addTemperatureEffects() {
-//        if (this.temperature < -30) {
-//            playerVisual.setFreezeTicks((int) (Math.abs(this.temperature + 30)));
-//        }
+        if (this.temperature < -30) {
+            playerVisual.setFreezeTicks((int) (Math.abs(this.temperature + 30)));
+        }
         List<TemperatureEffect> effects = new ArrayList<>();
-
     }
-
-
 }

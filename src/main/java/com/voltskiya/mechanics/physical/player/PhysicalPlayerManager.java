@@ -82,4 +82,10 @@ public class PhysicalPlayerManager {
             players.values().forEach(manager::saveInFolder);
         }
     }
+
+    public static void onDisable() {
+        synchronized (players) {
+            players.values().forEach(PhysicalPlayer::onDisable);
+        }
+    }
 }

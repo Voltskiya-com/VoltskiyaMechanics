@@ -3,7 +3,7 @@ package com.voltskiya.mechanics.physical.temperature.check;
 public class TemperatureConsts {
 
     private static TemperatureConsts instance = new TemperatureConsts();
-    public double maxWindSpeed = 250;
+    public double maxWindSpeed = 120;
     public BlockSourcesConsts blockSources = new BlockSourcesConsts();
     public WetnessConsts wetness = new WetnessConsts();
     public HeatConsts temperature = new HeatConsts();
@@ -22,7 +22,7 @@ public class TemperatureConsts {
         public double rawPercImportance = 1;
 
         // with an insideness of 1, blockSources is multiplied by an additional insidessMultiplier
-        public double insidenessMultiplier = 2;
+        public double insidenessMultiplier = 4;
 
         // believed to impact performance O(n) = n^3
         public int checkRadius = 40;
@@ -58,7 +58,9 @@ public class TemperatureConsts {
     public static class HeatConsts {
 
         public double effectiveMaxAirTemp = 200;
-        public double baseHeatTransferPerSec = 1d / 5 / 200; // 1/5 of effectiveMaxAirTemp per second
+        public double baseHeatTransferPerSec = 1d / 5 / 200 * 10; // 1/5 of effectiveMaxAirTemp per second
         public double evaporationImpactOnHeatRate = .25;
+        public double evaporationScalerToHeat = 20;
+        public double returnToZeroEffect = 10d / 200;
     }
 }

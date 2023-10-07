@@ -37,7 +37,8 @@ public class PhysicalPlayer implements SaveFileable {
         if (!PlayerUtils.isSurvival(player)) return;
         toEachPart(PhysicalPlayerPart::onTick);
 
-        display.updateDisplay(thirst.getThirstPercentage(), stamina.getStaminaPercentage(), temperature.getTemperature());
+        display.updateDisplay(thirst.getThirstPercentage(), stamina.getStaminaPercentage(), temperature.getTemperature(),
+            temperature.getWetness());
     }
 
 
@@ -48,6 +49,10 @@ public class PhysicalPlayer implements SaveFileable {
     public void onLeave() {
         display.remove();
         PhysicalPlayerManager.remove(player.getUniqueId());
+    }
+
+    public void onDisable() {
+        display.remove();
     }
 
     private void toEachPart(Consumer<PhysicalPlayerPart> toEach) {

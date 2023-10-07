@@ -20,7 +20,7 @@ import voltskiya.apple.utilities.chance.ChanceShapes;
 public class TemperatureChecks {
 
     private static final int INSIDE_RAY_LENGTH = 40;
-    private static final int INSIDE_RAY_COUNT = 100;
+    private static final int INSIDE_RAY_COUNT = 10; // can be low because we do a moving average
 
     /**
      * @return [0, 1] high insideness means you're in an enclosed area
@@ -30,19 +30,20 @@ public class TemperatureChecks {
         World world = center.getWorld();
         Vector centerVector = center.toVector();
 
-        double averageDistance = 0;
+        double distanceSum = 0;
         for (int i = 0; i < INSIDE_RAY_COUNT; i++) {
             Vector randomDirection = chance.sphere(1);
             RayTraceResult rayTrace = world.rayTraceBlocks(center, randomDirection, INSIDE_RAY_LENGTH,
                 FluidCollisionMode.ALWAYS, false);
-            if (rayTrace == null) averageDistance += INSIDE_RAY_LENGTH;
-            else averageDistance += centerVector.clone().subtract(rayTrace.getHitPosition()).length();
+            if (rayTrace == null) distanceSum += INSIDE_RAY_LENGTH;
+            else distanceSum += centerVector.distance(rayTrace.getHitPosition());
         }
-        double insideness = averageDistance / INSIDE_RAY_COUNT / INSIDE_RAY_LENGTH;
+        double insideness = 1 - distanceSum / INSIDE_RAY_COUNT / INSIDE_RAY_LENGTH;
 
         // inflate insideness because the ground is almost always below you, which deflates insideness
         // range is still [0 to 1)
-        return 2 * insideness - insideness * insideness;
+        double inflated = 2 * insideness - insideness * insideness;
+        return Math.pow(inflated, 10); // deflate low values
     }
 
     /**
@@ -88,7 +89,7 @@ public class TemperatureChecks {
         double maxVal = wetness().maxWetness;
 
         double wetProtection = calc.getClothing().getWetProtection();
-        double heavyWetProtection = Math.max(1, wetProtection - 100 * .5);
+        double heavyWetProtection = Math.max(1, wetProtection - 100 * .5); // 100 is max wetProtection
         if (player.isUnderWater()) return maxVal / heavyWetProtection;
         if (player.isInWater()) return maxVal * .55 / heavyWetProtection;
         if (player.isInPowderedSnow()) return maxVal * .45 / wetProtection;

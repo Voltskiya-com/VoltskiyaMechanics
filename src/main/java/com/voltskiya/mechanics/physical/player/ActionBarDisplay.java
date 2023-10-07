@@ -19,6 +19,7 @@ public class ActionBarDisplay {
     public static final String AIR_BOSS_BAR_TITLE = "Air";
     public static final String AIR_BOSS_BAR_KEY = "air.";
     public static final String TEMPERATURE_BOSS_BAR_KEY = "temperature.";
+    public static final String WETNESS_BOSS_BAR_KEY = "wetness.";
     private static final Bar thirstBar = new Bar("\uf003", "\uf004", "\uf005", false);
     private static final Bar staminaBar = new Bar("\uf006", "\uf007", "\uf008", true);
 
@@ -26,8 +27,23 @@ public class ActionBarDisplay {
     private BukkitTask updateAirTask;
     private KeyedBossBar bossBarAir;
     private KeyedBossBar bossBarTemperature;
+    private KeyedBossBar bossBarWetness;
 
-    public void updateDisplay(double thirstPercentage, double staminaPercentage, double temperature) {
+    public void updateDisplay(double thirstPercentage, double staminaPercentage, double temperature, double wetness) {
+        actionBar(thirstPercentage, staminaPercentage);
+
+        this.bossBarTemperature.addPlayer(player);
+        double temperaturePercentage = Math.min(1, Math.max(0, temperature / 200 + .5));
+        this.bossBarTemperature.setProgress(temperaturePercentage);
+        this.bossBarTemperature.setTitle("Temperature: %d".formatted(Math.round(temperature)));
+
+        this.bossBarWetness.addPlayer(player);
+        double wetnessPercentage = Math.min(1, Math.max(0, wetness / 100));
+        this.bossBarWetness.setProgress(wetnessPercentage);
+        this.bossBarWetness.setTitle("Wetness: %d".formatted(Math.round(wetness)));
+    }
+
+    private void actionBar(double thirstPercentage, double staminaPercentage) {
         StringBuilder armorStr = calcArmorStr();
 
         Component thirstDisplay = thirstBar.display(thirstPercentage);
@@ -38,11 +54,6 @@ public class ActionBarDisplay {
         TextComponent backwardsSpace = Component.text("\uf001".repeat(2));
         Component armor = armor1.append(backwardsSpace).append(armorIcon).append(backwardsSpace).append(armor2);
         player.sendActionBar(thirstDisplay.append(Component.space()).append(armor).append(Component.space()).append(staminaDisplay));
-
-        this.bossBarTemperature.addPlayer(player);
-        double temperaturePercentage = Math.min(1, Math.max(0, .5 + temperature / 200));
-        this.bossBarTemperature.setProgress(temperaturePercentage);
-        this.bossBarTemperature.setTitle("Temperature: %d".formatted((int) temperature));
     }
 
     @NotNull
@@ -63,7 +74,10 @@ public class ActionBarDisplay {
         this.updateAirTask = Bukkit.getScheduler().runTaskTimer(VoltskiyaPlugin.get(), this::updateAir, 0L, 1L);
 
         NamespacedKey temperatureKey = VoltskiyaPlugin.get().namespacedKey(TEMPERATURE_BOSS_BAR_KEY + player.getUniqueId());
-        this.bossBarTemperature = Bukkit.createBossBar(temperatureKey, "Temperature", BarColor.RED, BarStyle.SEGMENTED_20);
+        this.bossBarTemperature = Bukkit.createBossBar(temperatureKey, "Temperature", BarColor.RED, BarStyle.SOLID);
+
+        NamespacedKey wetnessKey = VoltskiyaPlugin.get().namespacedKey(WETNESS_BOSS_BAR_KEY + player.getUniqueId());
+        this.bossBarWetness = Bukkit.createBossBar(wetnessKey, "Wetness", BarColor.BLUE, BarStyle.SOLID);
     }
 
     private void updateAir() {
@@ -76,10 +90,14 @@ public class ActionBarDisplay {
     }
 
     public void remove() {
-        bossBarAir.removeAll();
+        bossBarAir.removePlayer(this.player);
+        bossBarTemperature.removePlayer(this.player);
+        bossBarWetness.removePlayer(this.player);
         Bukkit.removeBossBar(bossBarAir.getKey());
         bossBarTemperature.removeAll();
         Bukkit.removeBossBar(this.bossBarTemperature.getKey());
+        bossBarWetness.removeAll();
+        Bukkit.removeBossBar(this.bossBarWetness.getKey());
         updateAirTask.cancel();
     }
 

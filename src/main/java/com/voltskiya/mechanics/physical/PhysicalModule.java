@@ -14,6 +14,7 @@ import com.voltskiya.mechanics.physical.stamina.StaminaConfig;
 import com.voltskiya.mechanics.physical.stamina.StaminaListener;
 import com.voltskiya.mechanics.physical.temperature.config.biome.TemperatureBiomeDB;
 import com.voltskiya.mechanics.physical.temperature.config.blocks.TemperatureBlocksConfig;
+import com.voltskiya.mechanics.physical.temperature.config.clothing.ClothingConfig;
 import com.voltskiya.mechanics.physical.temperature.util.daily.VarDailyTimerListener;
 import com.voltskiya.mechanics.physical.thirst.ThirstCommand;
 import com.voltskiya.mechanics.physical.thirst.ThirstListener;
@@ -57,6 +58,12 @@ public class PhysicalModule extends AbstractModule {
     }
 
     @Override
+    public void onDisable() {
+        PhysicalPlayerManager.onDisable();
+        PhysicalPlayerManager.saveNow();
+    }
+
+    @Override
     public void enable() {
         enableTasks();
 
@@ -92,6 +99,7 @@ public class PhysicalModule extends AbstractModule {
             configJson(StaminaConfig.class, "StaminaConfig"),
             configFolder("Temperature",
                 configJson(TemperatureBlocksConfig.class, "TemperatureBlocks"),
+                configJson(ClothingConfig.class, "Clothing"),
                 configJson(TemperatureBiomeDB.class, "TemperatureBiomes")
                     .asJson(GsonSerializeMC.completeGsonBuilderMC().create())
             )

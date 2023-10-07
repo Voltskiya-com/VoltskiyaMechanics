@@ -4,12 +4,19 @@ import com.voltskiya.mechanics.physical.player.PhysicalPlayer;
 import com.voltskiya.mechanics.physical.temperature.check.TemperatureConsts;
 import com.voltskiya.mechanics.physical.temperature.check.TemperatureConsts.HeatConsts;
 import com.voltskiya.mechanics.physical.temperature.check.TemperatureConsts.WetnessConsts;
+import java.util.Arrays;
 import org.bukkit.entity.Player;
 
 public class TemperatureCalc {
 
     private final ClothingCalc clothing = new ClothingCalc();
     private final PhysicalPlayer physical;
+    /**
+     * how inside the player is - close to 1 means very enclosed
+     * <p/>
+     * [0, 1]
+     */
+    private final MovingAverage insideness = new MovingAverage(5 * 10);
     /**
      * raw value from weather
      * <p/>
@@ -35,12 +42,6 @@ public class TemperatureCalc {
      * </ol>>
      */
     private double windImpactFinalized;
-    /**
-     * how inside the player is - close to 1 means very enclosed
-     * <p/>
-     * [0, 1]
-     */
-    private double insideness;
     /**
      * (-inf, inf) - accounts for the following:
      * <ol>
@@ -110,11 +111,12 @@ public class TemperatureCalc {
 
     public void finalizeAirTemp() {
         double realWetness = temperature().getWetness() / constsWetness().maxWetness;
-        double protection;
+        double wetnessScaler = constsTemperature().evaporationScalerToHeat * evaporationRate;
 
-        if (this.airTempFinalized > 0) {
+        double protection;
+        if (this.airTemp > 0) {
             this.airTempFinalized = this.airTemp * (1 - this.windImpactFinalized);
-            protection = Math.max(clothing.getHeatProtection(), realWetness * 100);
+            protection = clothing.getHeatProtection();
         } else {
             this.airTempFinalized = this.airTemp * (1 + this.windImpactFinalized);
             double wetImpactOnClothing = constsWetness().impactOnWinterClothing(windImpactFinalized);
@@ -124,7 +126,7 @@ public class TemperatureCalc {
             double multiplier = clothingMultiplier + wetnessMultiplier; // between 0 and 1
             protection = clothing.getColdProtection() * multiplier;
         }
-        this.airTempFinalized += this.heatSources;
+        this.airTempFinalized += this.heatSources - wetnessScaler;
 
         // if protection 0, temperature stays the same
         if (protection < 0) {
@@ -141,18 +143,29 @@ public class TemperatureCalc {
     }
 
     public void finalizeWindKph() {
-        this.windImpactFinalized = windKph;
-        this.windImpactFinalized /= TemperatureConsts.get().maxWindSpeed;
-        this.windImpactFinalized /= clothing.getWindProtection();
-        this.windImpactFinalized *= 1 - insideness; // very inside means very protected
+        this.windImpactFinalized = windKph / TemperatureConsts.get().maxWindSpeed;
+        double protection = clothing.getWindProtection();
+        if (protection < 0) {
+            double prot = -protection / 100; // flip the sign
+            this.windImpactFinalized *= 1 + 3 * prot; // if (protection == -100), will 4x the temperature
+        } else {
+            double prot = protection / 100; // already positive
+            this.windImpactFinalized *= 1 - prot; // if (protection == 100), will zero the temperature
+        }
+        this.windImpactFinalized *= 1 - getInsideness(); // very inside means very protected
     }
 
+    /**
+     * how inside the player is - close to 1 means very enclosed
+     * <p/>
+     * [0, 1]
+     */
     public double getInsideness() {
-        return insideness;
+        return this.insideness.get();
     }
 
     public void setInsideness(double insideness) {
-        this.insideness = insideness;
+        this.insideness.addVal(insideness);
     }
 
     public void setHeatSources(double heatSources) {
@@ -187,13 +200,32 @@ public class TemperatureCalc {
 
     public void finalizeHeatTransferRate() {
         this.heatTransferRate = constsTemperature().baseHeatTransferPerSec;
-        if (this.temperature().getHeatDirection() < 0) {
+
+        double evaporation = constsTemperature().evaporationImpactOnHeatRate * this.evaporationRate;
+        double realWetness = this.temperature().getWetness() / 100;
+        double evaporationImpact = Math.min(realWetness, evaporation);
+
+        double direction = this.temperature().getHeatDirection();
+        boolean isCooling = direction < 0;
+        if (isCooling) {
             // cooling
             this.heatTransferRate *= this.clothing.getColdResistance();
+            this.heatTransferRate *= 1 + evaporationImpact;
         } else {
             this.heatTransferRate *= this.clothing.getHeatResistance();
+            this.heatTransferRate *= 1 - evaporationImpact;
         }
-        this.heatTransferRate += constsTemperature().evaporationImpactOnHeatRate * this.evaporationRate;
+        if (heatTransferRate < 0) {
+            heatTransferRate = 0;
+            return;
+        }
+        if (isCooling) heatTransferRate = -heatTransferRate;
+
+        // if we're returning to normal from extreme temperatures, return to 0 quickly
+        double heat = temperature().getTemperature();
+        if (Math.abs(heat + direction) < Math.abs(heat)) {
+            heatTransferRate *= constsTemperature().returnToZeroEffect * Math.abs(heat);
+        }
     }
 
     public double getFinalHeatTransferRate() {
@@ -205,13 +237,38 @@ public class TemperatureCalc {
     }
 
     /**
-     * may return a value that would make the player go exceed max/min limits of wetness
+     * may return a value that would make the player exceed max/min limits of wetness
      */
     public double getFinalWetTransferRate() {
-        if (temperature().getWetDirection() < 0) {
-            // drying
-            return this.getFinalDryingRate();
+        boolean isDrying = temperature().getWetnessDirection() <= 0;
+        double soakRateOrDry = isDrying ? 0 : this.getFinalSoakRate(); // drying
+        return soakRateOrDry - this.getFinalDryingRate();
+    }
+
+    private static class MovingAverage {
+
+        private final double[] values;
+        private final int size;
+        private boolean isNewAverage = true;
+        private int index = 0;
+
+        private MovingAverage(int size) {
+            this.values = new double[size];
+            this.size = size;
         }
-        return this.getFinalSoakRate() - this.getFinalDryingRate();
+
+        private void addVal(double val) {
+            if (this.isNewAverage) {
+                Arrays.fill(this.values, val);
+                this.isNewAverage = false;
+                return;
+            }
+            this.values[index] = val;
+            this.index = (index + 1) % size;
+        }
+
+        public double get() {
+            return Arrays.stream(values).average().orElse(0);
+        }
     }
 }
