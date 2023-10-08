@@ -25,7 +25,7 @@ public class TemperatureConsts {
         public double insidenessMultiplier = 4;
 
         // believed to impact performance O(n) = n^3
-        public int checkRadius = 40;
+        public int checkRadius = 20;
         // number between 1 and 2 which determines how to reduce distance sources impact on temperature
         public double distanceImpact = 1 + 1 / 7d;
     }

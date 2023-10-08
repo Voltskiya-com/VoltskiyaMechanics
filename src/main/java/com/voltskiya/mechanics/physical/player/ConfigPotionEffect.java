@@ -1,6 +1,7 @@
 package com.voltskiya.mechanics.physical.player;
 
 import com.voltskiya.mechanics.physical.PhysicalModule;
+import java.util.Objects;
 import org.bukkit.NamespacedKey;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -10,6 +11,7 @@ public class ConfigPotionEffect {
 
     protected String potion;
     protected int amplifier;
+    protected Integer duration = null;
 
     private transient PotionEffect cachedPotion;
 
@@ -31,6 +33,10 @@ public class ConfigPotionEffect {
             PhysicalModule.get().logger().error("%s is not a valid PotionEffectType in ThirstEffect".formatted(potion));
             return this.cachedPotion = PotionEffectType.HERO_OF_THE_VILLAGE.createEffect(0, 0);
         }
-        return this.cachedPotion = new PotionEffect(effectType, 40, amplifier, true);
+        return this.cachedPotion = new PotionEffect(effectType, duration(), amplifier, true);
+    }
+
+    public int duration() {
+        return Objects.requireNonNullElse(this.duration, 40);
     }
 }

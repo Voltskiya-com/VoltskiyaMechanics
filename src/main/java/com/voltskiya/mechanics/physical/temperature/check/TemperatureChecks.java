@@ -1,6 +1,7 @@
 package com.voltskiya.mechanics.physical.temperature.check;
 
 import apple.mc.utilities.world.vector.VectorUtils;
+import apple.utilities.util.NumberUtils;
 import com.voltskiya.mechanics.physical.temperature.TemperatureCalc;
 import com.voltskiya.mechanics.physical.temperature.check.TemperatureConsts.BlockSourcesConsts;
 import com.voltskiya.mechanics.physical.temperature.check.TemperatureConsts.WetnessConsts;
@@ -58,10 +59,13 @@ public class TemperatureChecks {
         int z = center.getBlockZ();
         final World world = center.getWorld();
         double total = 0;
+        int minY = world.getMinHeight();
+        int maxY = world.getMaxHeight();
         int checkRadius = blockSources().checkRadius;
         for (int xi = -checkRadius; xi <= checkRadius; xi++) {
-            for (int yi = -checkRadius; yi <= checkRadius; yi++) {
-                for (int zi = -checkRadius; zi <= checkRadius; zi++) {
+            for (int zi = -checkRadius; zi <= checkRadius; zi++) {
+                for (int yi = -checkRadius; yi <= checkRadius; yi++) {
+                    if (!NumberUtils.between(minY, y + yi, maxY)) continue;
                     @NotNull Block block = world.getBlockAt(x + xi, y + yi, z + zi);
                     @Nullable TemperatureBlock temp = TemperatureBlocksConfig.get().getBlock(block.getType());
                     if (temp != null) {

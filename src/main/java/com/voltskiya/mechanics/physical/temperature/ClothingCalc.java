@@ -2,7 +2,6 @@ package com.voltskiya.mechanics.physical.temperature;
 
 import com.voltskiya.mechanics.physical.temperature.config.clothing.ClothingConfig;
 import com.voltskiya.mechanics.physical.temperature.config.clothing.HasClothingProtection;
-import java.util.Arrays;
 import org.apache.commons.lang3.NotImplementedException;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -32,7 +31,8 @@ public class ClothingCalc implements HasClothingProtection {
 
     public void calculate(Player player) {
         ItemStack[] armor = player.getInventory().getArmorContents();
-        if (Arrays.deepEquals(previousArmor, armor)) return;
+//        if (Arrays.deepEquals(previousArmor, armor)) return;
+//        previousArmor = armor;
 
         this.resetStats();
         ResistanceMath windProtection = new ResistanceMath();

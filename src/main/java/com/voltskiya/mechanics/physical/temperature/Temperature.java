@@ -1,5 +1,6 @@
 package com.voltskiya.mechanics.physical.temperature;
 
+import com.voltskiya.mechanics.physical.player.ConfigPotionEffect;
 import com.voltskiya.mechanics.physical.player.PhysicalPlayer;
 import com.voltskiya.mechanics.physical.player.PhysicalPlayerPart;
 import com.voltskiya.mechanics.physical.temperature.check.TemperatureChecks;
@@ -9,8 +10,12 @@ import com.voltskiya.mechanics.physical.temperature.config.biome.TemperatureBiom
 import com.voltskiya.mechanics.physical.temperature.config.biome.time.MergedTemperatureTime;
 import com.voltskiya.mechanics.physical.temperature.config.biome.time.TemperatureTime;
 import com.voltskiya.mechanics.physical.temperature.config.effect.TemperatureEffect;
-import java.util.ArrayList;
+import com.voltskiya.mechanics.physical.temperature.config.effect.TemperatureEffectConfig;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
@@ -19,12 +24,13 @@ import org.jetbrains.annotations.Nullable;
 
 public class Temperature extends PhysicalPlayerPart {
 
+    private final transient Map<UUID, Integer> effectlastApplied = new HashMap<>();
     // range: [-inf, inf]
     protected double temperature = 0;
     // range: [0, 100]
     protected double wetness = 0;
-    protected transient TemperatureCalc calc;
-    private TemperatureVisual playerVisual;
+    private transient TemperatureCalc calc;
+    private transient TemperatureVisual visual;
 
     private static TemperatureConsts consts() {
         return TemperatureConsts.get();
@@ -41,7 +47,12 @@ public class Temperature extends PhysicalPlayerPart {
     protected void onLoad(PhysicalPlayer player) {
         super.onLoad(player);
         this.calc = new TemperatureCalc(this.getPhysical());
-        this.playerVisual = new TemperatureVisual(this.getPlayer());
+        this.visual = new TemperatureVisual(this.getPlayer());
+    }
+
+    @Override
+    public Player getPlayer() {
+        return super.getPlayer();
     }
 
     @Override
@@ -86,6 +97,22 @@ public class Temperature extends PhysicalPlayerPart {
         this.doWetTick();
         this.doHeatTick();
 
+        this.addTemperatureEffects();
+        this.visuals();
+    }
+
+    private void visuals() {
+        double wetAmount = this.getWetness() / consts().wetness.maxWetness;
+        double maxTemp = consts().temperature.effectiveMaxAirTemp;
+        int maxFreezeTicks = this.getPlayer().getMaxFreezeTicks();
+        double freezeTicks = (-this.getTemperature() - 30);
+        freezeTicks *= maxFreezeTicks * 2 / maxTemp;
+
+        if (freezeTicks < 0) freezeTicks = 0;
+        else if (freezeTicks > maxFreezeTicks) freezeTicks = maxFreezeTicks;
+
+        this.visual.wetAmount(wetAmount)
+            .freezeTicks((int) freezeTicks);
     }
 
     public double getHeatDirection() {
@@ -127,9 +154,15 @@ public class Temperature extends PhysicalPlayerPart {
     }
 
     public void addTemperatureEffects() {
-        if (this.temperature < -30) {
-            playerVisual.setFreezeTicks((int) (Math.abs(this.temperature + 30)));
+        List<TemperatureEffect> effects = TemperatureEffectConfig.get().findEffects(this);
+        int now = Bukkit.getCurrentTick();
+        for (TemperatureEffect effect : effects) {
+            this.effectlastApplied.put(effect.getId(), now);
         }
-        List<TemperatureEffect> effects = new ArrayList<>();
+        getPlayer().addPotionEffects(effects.stream().map(ConfigPotionEffect::potion).toList());
+    }
+
+    public int getEffectLastActivated(UUID id) {
+        return effectlastApplied.getOrDefault(id, 0);
     }
 }
