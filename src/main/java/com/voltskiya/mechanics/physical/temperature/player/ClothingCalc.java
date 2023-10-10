@@ -1,4 +1,4 @@
-package com.voltskiya.mechanics.physical.temperature;
+package com.voltskiya.mechanics.physical.temperature.player;
 
 import com.voltskiya.mechanics.physical.temperature.config.clothing.ClothingConfig;
 import com.voltskiya.mechanics.physical.temperature.config.clothing.HasClothingProtection;

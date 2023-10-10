@@ -1,27 +1,32 @@
-package com.voltskiya.mechanics.physical.temperature;
+package com.voltskiya.mechanics.physical.temperature.player;
 
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import java.util.Random;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
-import org.bukkit.util.Vector;
 import voltskiya.apple.utilities.minecraft.player.PlayerUtils;
+import voltskiya.apple.utilities.sound.SoundAction;
 
 public class TemperatureVisual {
 
+    private static final SoundAction WIND1 = SoundAction.create("wind1", Sound.ENTITY_PHANTOM_FLAP, SoundCategory.WEATHER, 0.5f, 1);
     private final Player player;
     private final BukkitTask task;
     private final Random random = new Random();
+    private final WindSounds wind;
     private int freezeTicks;
     private double wetAmount;
 
     public TemperatureVisual(Player player) {
         this.player = player;
-        task = Bukkit.getScheduler().runTaskTimer(VoltskiyaPlugin.get(), this::tick, 1, 1);
+        this.task = Bukkit.getScheduler().runTaskTimer(VoltskiyaPlugin.get(), this::tick, 1, 1);
+        this.wind = new WindSounds(this);
     }
 
     private void tick() {
@@ -30,12 +35,12 @@ public class TemperatureVisual {
             return;
         }
         if (!PlayerUtils.isSurvival(player)) return;
-        if (this.freezeTicks > 0) {
-            freeze();
-        } else {
-        }
+
+        if (this.freezeTicks > 0) freeze();
+        wind.tick();
         sweat();
     }
+
 
     private void freeze() {
         int alreadyFreezing = player.getFreezeTicks();
@@ -60,22 +65,6 @@ public class TemperatureVisual {
             .spawn();
     }
 
-    private Vector normalVector(double x1, double z1, double y1, boolean isZeroY, boolean isZeroZ) {
-        double range = .25;
-        double x2 = random.nextDouble(-range, range);
-        double randomVal = random.nextDouble(-range, range);
-        double y2;
-        double z2;
-        if (isZeroY) {
-            z2 = randomVal;
-            y2 = -(x1 * x2 + z1 * z2) / y1;
-        } else {
-            y2 = randomVal;
-            z2 = -(x1 * x2 + y1 * y2) / z1;
-        }
-        return new Vector(x1 + x2, y1 + y2, z1 + z2);
-    }
-
     public TemperatureVisual freezeTicks(int freezeTicks) {
         this.freezeTicks = freezeTicks;
         return this;
@@ -84,5 +73,14 @@ public class TemperatureVisual {
     public TemperatureVisual wetAmount(double wetAmount) {
         this.wetAmount = wetAmount;
         return this;
+    }
+
+    public TemperatureVisual setWind(double windChance) {
+        this.wind.setWind(windChance);
+        return this;
+    }
+
+    public Player getPlayer() {
+        return this.player;
     }
 }

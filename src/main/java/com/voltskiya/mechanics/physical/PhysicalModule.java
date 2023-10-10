@@ -16,6 +16,7 @@ import com.voltskiya.mechanics.physical.temperature.config.biome.TemperatureBiom
 import com.voltskiya.mechanics.physical.temperature.config.blocks.TemperatureBlocksConfig;
 import com.voltskiya.mechanics.physical.temperature.config.clothing.ClothingConfig;
 import com.voltskiya.mechanics.physical.temperature.config.effect.TemperatureEffectConfig;
+import com.voltskiya.mechanics.physical.temperature.config.visual.TemperatureVisualConfig;
 import com.voltskiya.mechanics.physical.temperature.util.daily.VarDailyTimerListener;
 import com.voltskiya.mechanics.physical.thirst.ThirstCommand;
 import com.voltskiya.mechanics.physical.thirst.ThirstListener;
@@ -102,6 +103,7 @@ public class PhysicalModule extends AbstractModule {
                 configJson(TemperatureBlocksConfig.class, "TemperatureBlocks"),
                 configJson(ClothingConfig.class, "Clothing"),
                 configJson(TemperatureEffectConfig.class, "Effects"),
+                configJson(TemperatureVisualConfig.class, "Visuals"),
                 configJson(TemperatureBiomeDB.class, "TemperatureBiomes")
                     .asJson(GsonSerializeMC.completeGsonBuilderMC().create())
             )

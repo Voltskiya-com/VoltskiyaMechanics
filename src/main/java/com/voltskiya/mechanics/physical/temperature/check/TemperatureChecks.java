@@ -2,11 +2,11 @@ package com.voltskiya.mechanics.physical.temperature.check;
 
 import apple.mc.utilities.world.vector.VectorUtils;
 import apple.utilities.util.NumberUtils;
-import com.voltskiya.mechanics.physical.temperature.TemperatureCalc;
 import com.voltskiya.mechanics.physical.temperature.check.TemperatureConsts.BlockSourcesConsts;
 import com.voltskiya.mechanics.physical.temperature.check.TemperatureConsts.WetnessConsts;
 import com.voltskiya.mechanics.physical.temperature.config.blocks.TemperatureBlock;
 import com.voltskiya.mechanics.physical.temperature.config.blocks.TemperatureBlocksConfig;
+import com.voltskiya.mechanics.physical.temperature.player.TemperatureCalc;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.World;

@@ -1,5 +1,7 @@
 package com.voltskiya.mechanics.physical.temperature;
 
+import static com.voltskiya.mechanics.physical.temperature.player.TemperatureTickMath.doTickMath;
+
 import com.voltskiya.mechanics.physical.player.ConfigPotionEffect;
 import com.voltskiya.mechanics.physical.player.PhysicalPlayer;
 import com.voltskiya.mechanics.physical.player.PhysicalPlayerPart;
@@ -11,6 +13,8 @@ import com.voltskiya.mechanics.physical.temperature.config.biome.time.MergedTemp
 import com.voltskiya.mechanics.physical.temperature.config.biome.time.TemperatureTime;
 import com.voltskiya.mechanics.physical.temperature.config.effect.TemperatureEffect;
 import com.voltskiya.mechanics.physical.temperature.config.effect.TemperatureEffectConfig;
+import com.voltskiya.mechanics.physical.temperature.player.TemperatureCalc;
+import com.voltskiya.mechanics.physical.temperature.player.TemperatureVisual;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +33,7 @@ public class Temperature extends PhysicalPlayerPart {
     protected double temperature = 0;
     // range: [0, 100]
     protected double wetness = 0;
+    protected transient double wind;
     private transient TemperatureCalc calc;
     private transient TemperatureVisual visual;
 
@@ -36,12 +41,6 @@ public class Temperature extends PhysicalPlayerPart {
         return TemperatureConsts.get();
     }
 
-    private static double overshootDirection(double diff, double minOrMax) {
-        // magic number just meant to overshoot towards finalGoal
-        double overshootDistance = 0.10;
-        double overshoot = Math.copySign(overshootDistance * minOrMax, diff);
-        return diff + overshoot;
-    }
 
     @Override
     protected void onLoad(PhysicalPlayer player) {
@@ -74,6 +73,10 @@ public class Temperature extends PhysicalPlayerPart {
         return wetness;
     }
 
+    public double getWind() {
+        return this.wind;
+    }
+
     @Override
     public void onTick() {
         Player player = this.getPlayer();
@@ -89,7 +92,7 @@ public class Temperature extends PhysicalPlayerPart {
         calc.setHeatSources(TemperatureChecks.blockSources(calc));
         calc.setWetness(TemperatureChecks.wetness(calc));
 
-        calc.finalizeWindKph();
+        this.wind = calc.finalizeWindKph();
         calc.finalizeDryingRate();
         calc.finalizeAirTemp();
         calc.finalizeHeatTransferRate();
@@ -103,6 +106,15 @@ public class Temperature extends PhysicalPlayerPart {
 
     private void visuals() {
         double wetAmount = this.getWetness() / consts().wetness.maxWetness;
+        int freezeTicks = calcFreezeTicks();
+        double windChance = calcWindChance();
+
+        this.visual.wetAmount(wetAmount)
+            .freezeTicks(freezeTicks)
+            .setWind(windChance);
+    }
+
+    private int calcFreezeTicks() {
         double maxTemp = consts().temperature.effectiveMaxAirTemp;
         int maxFreezeTicks = this.getPlayer().getMaxFreezeTicks();
         double freezeTicks = (-this.getTemperature() - 30);
@@ -110,9 +122,11 @@ public class Temperature extends PhysicalPlayerPart {
 
         if (freezeTicks < 0) freezeTicks = 0;
         else if (freezeTicks > maxFreezeTicks) freezeTicks = maxFreezeTicks;
+        return (int) freezeTicks;
+    }
 
-        this.visual.wetAmount(wetAmount)
-            .freezeTicks((int) freezeTicks);
+    private double calcWindChance() {
+        return getWind() / consts().maxWindSpeed;
     }
 
     public double getHeatDirection() {
@@ -124,7 +138,7 @@ public class Temperature extends PhysicalPlayerPart {
         double goal = calc.getFinalAirTemp();
         double max = consts().temperature.effectiveMaxAirTemp;
 
-        this.temperature = doTick(rate, this.temperature, goal, max);
+        this.temperature = doTickMath(rate, this.temperature, goal, max);
     }
 
     public double getWetnessDirection() {
@@ -136,21 +150,10 @@ public class Temperature extends PhysicalPlayerPart {
         double goal = calc.getFinalWetness();
         double max = consts().wetness.maxWetness;
 
-        this.wetness = doTick(rate, this.wetness, goal, max);
+        this.wetness = doTickMath(rate, this.wetness, goal, max);
 
         if (this.wetness < 0) this.wetness = 0;
         else if (this.wetness > max) this.wetness = max;
-    }
-
-    private double doTick(double rate, double current, double goal, double range) {
-        if (rate == 0) return current;
-        boolean isPos = rate > 0;
-
-        double overshotDirection = overshootDirection(goal - current, range);
-        double direction = Math.copySign(overshotDirection * rate, isPos ? 1 : -1);
-
-        boolean isGoalNearby = Math.abs(goal - current) < Math.abs(direction);
-        return isGoalNearby ? goal : current + direction;
     }
 
     public void addTemperatureEffects() {
@@ -161,6 +164,7 @@ public class Temperature extends PhysicalPlayerPart {
         }
         getPlayer().addPotionEffects(effects.stream().map(ConfigPotionEffect::potion).toList());
     }
+
 
     public int getEffectLastActivated(UUID id) {
         return effectlastApplied.getOrDefault(id, 0);

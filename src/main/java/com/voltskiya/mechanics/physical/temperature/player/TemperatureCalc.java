@@ -1,9 +1,8 @@
-package com.voltskiya.mechanics.physical.temperature;
+package com.voltskiya.mechanics.physical.temperature.player;
 
 import com.voltskiya.mechanics.physical.player.PhysicalPlayer;
+import com.voltskiya.mechanics.physical.temperature.Temperature;
 import com.voltskiya.mechanics.physical.temperature.check.TemperatureConsts;
-import com.voltskiya.mechanics.physical.temperature.check.TemperatureConsts.HeatConsts;
-import com.voltskiya.mechanics.physical.temperature.check.TemperatureConsts.WetnessConsts;
 import java.util.Arrays;
 import org.bukkit.entity.Player;
 
@@ -68,12 +67,8 @@ public class TemperatureCalc {
         this.clothing.calculate(getPlayer());
     }
 
-    private static WetnessConsts constsWetness() {
-        return TemperatureConsts.get().wetness;
-    }
-
-    private static HeatConsts constsTemperature() {
-        return TemperatureConsts.get().temperature;
+    private static TemperatureConsts consts() {
+        return TemperatureConsts.get();
     }
 
     public void updateClothing() {
@@ -110,8 +105,8 @@ public class TemperatureCalc {
     }
 
     public void finalizeAirTemp() {
-        double realWetness = temperature().getWetness() / constsWetness().maxWetness;
-        double wetnessScaler = constsTemperature().evaporationScalerToHeat * evaporationRate;
+        double realWetness = temperature().getWetness() / consts().wetness.maxWetness;
+        double wetnessScaler = consts().temperature.evaporationScalerToHeat * evaporationRate;
 
         double protection;
         if (this.airTemp > 0) {
@@ -119,7 +114,7 @@ public class TemperatureCalc {
             protection = clothing.getHeatProtection();
         } else {
             this.airTempFinalized = this.airTemp * (1 + this.windImpactFinalized);
-            double wetImpactOnClothing = constsWetness().impactOnWinterClothing(windImpactFinalized);
+            double wetImpactOnClothing = consts().wetness.impactOnWinterClothing(windImpactFinalized);
 
             double clothingMultiplier = 1 - wetImpactOnClothing;
             double wetnessMultiplier = wetImpactOnClothing * (1 - realWetness);
@@ -142,7 +137,7 @@ public class TemperatureCalc {
         this.windKph = windKph;
     }
 
-    public void finalizeWindKph() {
+    public double finalizeWindKph() {
         this.windImpactFinalized = windKph / TemperatureConsts.get().maxWindSpeed;
         double protection = clothing.getWindProtection();
         if (protection < 0) {
@@ -153,6 +148,7 @@ public class TemperatureCalc {
             this.windImpactFinalized *= 1 - prot; // if (protection == 100), will zero the temperature
         }
         this.windImpactFinalized *= 1 - getInsideness(); // very inside means very protected
+        return windImpactFinalized * TemperatureConsts.get().maxWindSpeed;
     }
 
     /**
@@ -182,13 +178,13 @@ public class TemperatureCalc {
 
     public void finalizeDryingRate() {
         double ambientAir = getAmbientAirTemp();
-        this.evaporationRate = constsWetness().baseDryingPerSec;
-        double windImpactOnDrying = constsWetness().windImpactOnDrying;
+        this.evaporationRate = consts().wetness.baseDryingPerSec;
+        double windImpactOnDrying = consts().wetness.windImpactOnDrying;
         this.evaporationRate *= 1 + windImpactOnDrying * this.windImpactFinalized;
         this.dryingRate = this.evaporationRate;
         if (ambientAir > 0) {
-            double heatImpactOnDrying = constsWetness().heatImpactOnDrying;
-            double effectiveMaxAirTemp = constsTemperature().effectiveMaxAirTemp;
+            double heatImpactOnDrying = consts().wetness.heatImpactOnDrying;
+            double effectiveMaxAirTemp = consts().temperature.effectiveMaxAirTemp;
             double airTempImpact = Math.min(1, ambientAir / effectiveMaxAirTemp);
             this.dryingRate *= 1 + heatImpactOnDrying * airTempImpact;
         }
@@ -199,9 +195,9 @@ public class TemperatureCalc {
     }
 
     public void finalizeHeatTransferRate() {
-        this.heatTransferRate = constsTemperature().baseHeatTransferPerSec;
+        this.heatTransferRate = consts().temperature.baseHeatTransferPerSec;
 
-        double evaporation = constsTemperature().evaporationImpactOnHeatRate * this.evaporationRate;
+        double evaporation = consts().temperature.evaporationImpactOnHeatRate * this.evaporationRate;
         double realWetness = this.temperature().getWetness() / 100;
         double evaporationImpact = Math.min(realWetness, evaporation);
 
@@ -224,7 +220,7 @@ public class TemperatureCalc {
         // if we're returning to normal from extreme temperatures, return to 0 quickly
         double heat = temperature().getTemperature();
         if (Math.abs(heat + direction) < Math.abs(heat)) {
-            heatTransferRate *= constsTemperature().returnToZeroEffect * Math.abs(heat);
+            heatTransferRate *= consts().temperature.returnToZeroEffect * Math.abs(heat);
         }
     }
 
@@ -233,7 +229,7 @@ public class TemperatureCalc {
     }
 
     public double getFinalSoakRate() {
-        return constsWetness().baseSoakPerSec * clothing.getWetResistance();
+        return consts().wetness.baseSoakPerSec * clothing.getWetResistance();
     }
 
     /**

@@ -55,6 +55,10 @@ public class PhysicalPlayer implements SaveFileable {
         display.remove();
     }
 
+    public void onChangeGameMode() {
+        display.onChangeGameMode();
+    }
+
     private void toEachPart(Consumer<PhysicalPlayerPart> toEach) {
         toEach.accept(this.stamina);
         toEach.accept(this.thirst);

@@ -2,7 +2,6 @@ package com.voltskiya.mechanics.physical.player;
 
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import com.voltskiya.mechanics.physical.PhysicalRecipes;
-import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -38,8 +37,9 @@ public class PhysicalPlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onChangeGameMode(PlayerGameModeChangeEvent e) {
-        if (!PlayerUtils.isSurvival(e.getNewGameMode()))
-            e.getPlayer().sendActionBar(Component.empty()); //Disables the display when in creative
+        if (PlayerUtils.isSurvival(e.getNewGameMode())) return;
+        PhysicalPlayer player = PhysicalPlayerManager.getPlayer(e.getPlayer());
+        VoltskiyaPlugin.get().scheduleSyncDelayedTask(player::onChangeGameMode);
     }
 
 }
