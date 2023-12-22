@@ -1,6 +1,11 @@
 package com.voltskiya.mechanics.physical.player;
 
 import com.voltskiya.mechanics.VoltskiyaPlugin;
+import com.voltskiya.mechanics.physical.temperature.Temperature;
+import com.voltskiya.mechanics.physical.temperature.check.TemperatureConsts;
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
@@ -23,41 +28,82 @@ public class ActionBarDisplay {
     public static final String WETNESS_BOSS_BAR_KEY = "wetness.";
     private static final Bar thirstBar = new Bar("\uf003", "\uf004", "\uf005", false);
     private static final Bar staminaBar = new Bar("\uf006", "\uf007", "\uf008", true);
+    private static final String BACKWARDS_SPACE = "\uf001";
 
     private Player player;
     private KeyedBossBar bossBarAir;
     private KeyedBossBar bossBarTemperature;
 
-    public void updateDisplay(double thirstPercentage, double staminaPercentage, double temperature, double wetness) {
-        actionBar(thirstPercentage, staminaPercentage);
-        updateAir();
-        statusEffects(temperature);
-    }
-
-    private void statusEffects(double temperature) {
-        double temperaturePercentage = Math.min(1, Math.max(0, temperature / 200 + .5));
-
+    @NotNull
+    private static TextComponent temperatureComponent(double heatDirection, double temperaturePercentage) {
         int characterIndex = (int) Math.round(temperaturePercentage * 10); // between 0 and 10
         String temperatureChar = String.valueOf((char) ('\uF020' + characterIndex));
 
-        TextColor color = temperatureColor(temperaturePercentage);
-        TextComponent temperatureSymbol = Component.text(temperatureChar, color);
-        String serialized = LegacyComponentSerializer.legacySection().serialize(temperatureSymbol);
+        double typical = TemperatureConsts.get().temperature.typicalHeatTranferRate();
+        char directionSymbol = heatDirectionSymbol(heatDirection, typical);
 
-        bossBarTemperature.setVisible(false);
-        bossBarTemperature.setVisible(true);
+        TextColor directionColor = temperatureColor(heatDirection / Math.abs(typical) / 2 / 2 + 0.5);
+        return Component.text(temperatureChar, temperatureColor(temperaturePercentage))
+            .append(Component.text(directionSymbol, directionColor));
+    }
+
+    private static char heatDirectionSymbol(double heatDirection, double typical) {
+        boolean reverse = heatDirection < 0;
+        double heatDirectionAbs = Math.abs(heatDirection);
+
+        int direction;
+        if (heatDirectionAbs < typical / 2)
+            direction = -1; // 0
+        else if (heatDirectionAbs < typical)
+            direction = 0; // low
+        else if (heatDirectionAbs < typical * 2)
+            direction = 1; // medium
+        else
+            direction = 2; // high
+
+        char directionSymbol = '\uF02B';
+        if (direction == -1) return (char) (directionSymbol + 6);
+        if (reverse) return (char) (directionSymbol + direction + 3);
+        return (char) (directionSymbol + direction);
+    }
+
+    @NotNull
+    private static TextColor temperatureColor(double percentage) {
+        if (percentage < 0) percentage = 0;
+        else if (percentage > 1) percentage = 1;
+
+        Color a;
+        Color b;
+        if (percentage > 0.5) {
+            a = Color.RED;
+            b = Color.LIGHT_GRAY;
+            percentage -= .5;
+        } else {
+            b = Color.BLUE;
+            a = Color.LIGHT_GRAY;
+        }
+        percentage *= 2;
+        double inverse = 1 - percentage;
+        int red = (int) (a.getRed() * percentage + b.getRed() * inverse);
+        int green = (int) (a.getGreen() * percentage + b.getGreen() * inverse);
+        int blue = (int) (a.getBlue() * percentage + b.getBlue() * inverse);
+        return TextColor.color(red, green, blue);
+    }
+
+    public void updateDisplay(double thirstPercentage, double staminaPercentage, Temperature temperature, double wetness) {
+        actionBar(thirstPercentage, staminaPercentage);
+        statusEffects(temperature);
+        updateAir();
+    }
+
+    private void statusEffects(Temperature temperature) {
+        double temperaturePercentage = Math.min(1, Math.max(0, temperature.getTemperature() / 200 + .5));
+        Component temperatureSymbol = temperatureComponent(temperature.getLastHeatDirection(), temperaturePercentage);
+        String serialized = LegacyComponentSerializer.legacySection().serialize(temperatureSymbol);
 
         this.bossBarTemperature.addPlayer(player);
         this.bossBarTemperature.setProgress(temperaturePercentage);
         this.bossBarTemperature.setTitle(serialized);
-    }
-
-    @NotNull
-    private TextColor temperatureColor(double percentage) {
-        int red = (int) (0xff * percentage);
-        int green = 0;
-        int blue = (int) (0xff * percentage);
-        return TextColor.color(red, green, blue);
     }
 
     private void actionBar(double thirstPercentage, double staminaPercentage) {
@@ -68,7 +114,7 @@ public class ActionBarDisplay {
         TextComponent armor1 = Component.text(armorStr.substring(0, 1));
         TextComponent armorIcon = Component.text("\uf002");
         TextComponent armor2 = Component.text(armorStr.substring(1));
-        TextComponent backwardsSpace = Component.text("\uf001".repeat(2));
+        TextComponent backwardsSpace = Component.text(BACKWARDS_SPACE.repeat(2));
         Component armor = armor1.append(backwardsSpace).append(armorIcon).append(backwardsSpace).append(armor2);
         Component actionBar = thirstDisplay
             .append(Component.space())
@@ -90,12 +136,29 @@ public class ActionBarDisplay {
 
     public void onLoad(Player player) {
         this.player = player;
+        reorderBossBars(player);
 
         NamespacedKey temperatureKey = VoltskiyaPlugin.get().namespacedKey(TEMPERATURE_BOSS_BAR_KEY + player.getUniqueId());
         this.bossBarTemperature = Bukkit.createBossBar(temperatureKey, "Temperature", BarColor.YELLOW, BarStyle.SOLID);
 
         NamespacedKey airKey = VoltskiyaPlugin.get().namespacedKey(AIR_BOSS_BAR_KEY + player.getUniqueId());
         this.bossBarAir = Bukkit.createBossBar(airKey, "Air", BarColor.BLUE, BarStyle.SOLID);
+
+    }
+
+    private void reorderBossBars(Player player) {
+        List<KeyedBossBar> bossBars = new ArrayList<>();
+        Bukkit.getBossBars().forEachRemaining((bar) -> {
+            if (bar.getPlayers().contains(player)) bossBars.add(bar);
+        });
+
+        // remove bars
+        for (KeyedBossBar bar : bossBars) bar.removePlayer(player);
+
+        // add them back later after the first tick
+        VoltskiyaPlugin.get().scheduleSyncDelayedTask(() -> {
+            for (KeyedBossBar bar : bossBars) bar.addPlayer(player);
+        }, 1);
     }
 
     private void updateAir() {

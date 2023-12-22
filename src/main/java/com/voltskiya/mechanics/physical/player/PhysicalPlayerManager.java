@@ -2,7 +2,6 @@ package com.voltskiya.mechanics.physical.player;
 
 import apple.utilities.database.concurrent.ConcurrentAJD;
 import apple.utilities.database.concurrent.group.ConcurrentAJDTyped;
-import com.voltskiya.lib.pmc.FileIOServiceNow;
 import com.voltskiya.mechanics.physical.PhysicalModule;
 import java.io.File;
 import java.util.HashMap;
@@ -61,7 +60,7 @@ public class PhysicalPlayerManager {
 
     public static void load() {
         File folder = PhysicalModule.get().getFile("players");
-        manager = ConcurrentAJD.createTyped(PhysicalPlayer.class, folder, FileIOServiceNow.executor());
+        manager = ConcurrentAJD.createTyped(PhysicalPlayer.class, folder);
         Bukkit.getOnlinePlayers().forEach(PhysicalPlayerManager::getPlayer);
     }
 

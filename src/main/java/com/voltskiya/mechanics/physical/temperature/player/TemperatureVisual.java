@@ -44,7 +44,7 @@ public class TemperatureVisual {
 
     private void freeze() {
         int alreadyFreezing = player.getFreezeTicks();
-        if (alreadyFreezing >= this.freezeTicks) return;
+        if (alreadyFreezing > this.freezeTicks) return;
         player.setFreezeTicks(this.freezeTicks);
     }
 

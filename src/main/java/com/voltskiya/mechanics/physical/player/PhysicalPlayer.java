@@ -37,7 +37,7 @@ public class PhysicalPlayer implements SaveFileable {
         if (!PlayerUtils.isSurvival(player)) return;
         toEachPart(PhysicalPlayerPart::onTick);
 
-        display.updateDisplay(thirst.getThirstPercentage(), stamina.getStaminaPercentage(), temperature.getTemperature(),
+        display.updateDisplay(thirst.getThirstPercentage(), stamina.getStaminaPercentage(), temperature,
             temperature.getWetness());
     }
 

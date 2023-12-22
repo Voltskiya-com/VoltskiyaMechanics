@@ -17,6 +17,6 @@ public class TemperatureTickMath {
         double direction = Math.copySign(overshotDirection * rate, isPos ? 1 : -1);
 
         boolean isGoalNearby = Math.abs(goal - current) < Math.abs(direction);
-        return isGoalNearby ? goal : current + direction;
+        return isGoalNearby ? goal - current : direction;
     }
 }

@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker.Std;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.voltskiya.lib.database.VoltskiyaDatabase;
+import com.voltskiya.lib.database.config.VoltskiyaDatabaseConfig;
+import com.voltskiya.lib.database.config.VoltskiyaMysqlConfig;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import com.voltskiya.mechanics.tribe.entity.DTribe;
 import com.voltskiya.mechanics.tribe.entity.DTribeInvite;
@@ -15,9 +18,6 @@ import io.ebean.Database;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import voltskiya.lib.database.VoltskiyaDatabase;
-import voltskiya.lib.database.config.VoltskiyaDatabaseConfig;
-import voltskiya.lib.database.config.VoltskiyaMysqlConfig;
 
 public class MechanicsDatabase extends VoltskiyaDatabase {
 

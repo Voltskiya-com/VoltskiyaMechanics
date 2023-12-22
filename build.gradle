@@ -83,7 +83,6 @@ dependencies {
 ebean {
     debugLevel = 0 //0 - 9
 }
-shadowJar.classifier ''
 
 remap {
     dependsOn(shadowJar)
@@ -95,8 +94,8 @@ remap {
         }
     }
 }
-shadowJar.classifier ''
 shadowJar {
+    archiveClassifier.set ''
     manifest {
         attributes 'Multi-Release': true
     }

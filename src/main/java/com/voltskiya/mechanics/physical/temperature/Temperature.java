@@ -36,6 +36,7 @@ public class Temperature extends PhysicalPlayerPart {
     protected transient double wind;
     private transient TemperatureCalc calc;
     private transient TemperatureVisual visual;
+    private double lastHeatDirection;
 
     private static TemperatureConsts consts() {
         return TemperatureConsts.get();
@@ -133,12 +134,17 @@ public class Temperature extends PhysicalPlayerPart {
         return calc.getFinalAirTemp() - this.temperature;
     }
 
+    public double getLastHeatDirection() {
+        return this.lastHeatDirection;
+    }
+
     private void doHeatTick() {
         double rate = calc.getFinalHeatTransferRate();
         double goal = calc.getFinalAirTemp();
         double max = consts().temperature.effectiveMaxAirTemp;
 
-        this.temperature = doTickMath(rate, this.temperature, goal, max);
+        this.lastHeatDirection = doTickMath(rate, this.temperature, goal, max);
+        this.temperature += lastHeatDirection;
     }
 
     public double getWetnessDirection() {
@@ -150,7 +156,7 @@ public class Temperature extends PhysicalPlayerPart {
         double goal = calc.getFinalWetness();
         double max = consts().wetness.maxWetness;
 
-        this.wetness = doTickMath(rate, this.wetness, goal, max);
+        this.wetness += doTickMath(rate, this.wetness, goal, max);
 
         if (this.wetness < 0) this.wetness = 0;
         else if (this.wetness > max) this.wetness = max;

@@ -62,5 +62,10 @@ public class TemperatureConsts {
         public double evaporationImpactOnHeatRate = .25;
         public double evaporationScalerToHeat = 20;
         public double returnToZeroEffect = 10d / 200;
+
+        public double typicalHeatTranferRate() {
+            double typicalHeatDirection = Math.sqrt(effectiveMaxAirTemp / 2);
+            return baseHeatTransferPerSec * effectiveMaxAirTemp / 2 * typicalHeatDirection * returnToZeroEffect;
+        }
     }
 }
