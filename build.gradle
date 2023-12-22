@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'io.ebean' version '13.17.4'
-    id "io.github.patrick.remapper" version "1.3.0"
+    id "io.github.patrick.remapper" version "1.4.0"
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
@@ -30,6 +30,7 @@ java {
         languageVersion.set(JavaLanguageVersion.of(18))
     }
 }
+
 
 project.group groupValue
 project.version versionValue
@@ -82,7 +83,6 @@ dependencies {
 ebean {
     debugLevel = 0 //0 - 9
 }
-shadowJar.classifier ''
 
 remap {
     dependsOn(shadowJar)
@@ -94,8 +94,8 @@ remap {
         }
     }
 }
-shadowJar.classifier ''
 shadowJar {
+    archiveClassifier.set ''
     manifest {
         attributes 'Multi-Release': true
     }
