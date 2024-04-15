@@ -14,7 +14,6 @@ import com.voltskiya.mechanics.tribe.entity.claim.DTribeClaim;
 import com.voltskiya.mechanics.tribe.entity.claim.DTribeClaimManager;
 import com.voltskiya.mechanics.tribe.entity.member.DTribeMember;
 import com.voltskiya.mechanics.tribe.query.TribeStorage;
-import io.ebean.Database;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,21 +31,16 @@ public class MechanicsDatabase extends VoltskiyaDatabase {
         return instance;
     }
 
-    public static Database db() {
-        return get().getDB();
-    }
-
     @Override
     protected List<Class<?>> getQueryBeans() {
         return new ArrayList<>(List.of(TribeStorage.class));
     }
 
     @Override
-    protected List<Class<?>> getEntities() {
-        List<Class<?>> entities = new ArrayList<>(List.of(BaseEntity.class));
+    protected void addEntities(List<Class<?>> entities) {
+        entities.add(BaseEntity.class);
         entities.addAll(List.of(DTribe.class, DTribeMember.class, DTribeInvite.class));
         entities.addAll(List.of(DTribeClaimManager.class, DTribeClaim.class));
-        return entities;
     }
 
     @Override

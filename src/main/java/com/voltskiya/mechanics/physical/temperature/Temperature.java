@@ -28,15 +28,17 @@ import org.jetbrains.annotations.Nullable;
 
 public class Temperature extends PhysicalPlayerPart {
 
-    private final transient Map<UUID, Integer> effectlastApplied = new HashMap<>();
     // range: [-inf, inf]
     protected double temperature = 0;
     // range: [0, 100]
     protected double wetness = 0;
     protected transient double wind;
+    private final transient Map<UUID, Integer> effectlastApplied = new HashMap<>();
     private transient TemperatureCalc calc;
     private transient TemperatureVisual visual;
     private double lastHeatDirection;
+
+    private boolean isTemperatureActive = true;
 
     private static TemperatureConsts consts() {
         return TemperatureConsts.get();
@@ -80,6 +82,7 @@ public class Temperature extends PhysicalPlayerPart {
 
     @Override
     public void onTick() {
+        if (!isTemperatureActive) return;
         Player player = this.getPlayer();
         calc.updateClothing();
         Location location = player.getEyeLocation();
@@ -174,5 +177,9 @@ public class Temperature extends PhysicalPlayerPart {
 
     public int getEffectLastActivated(UUID id) {
         return effectlastApplied.getOrDefault(id, 0);
+    }
+
+    public boolean toggleIsActive() {
+        return this.isTemperatureActive = !this.isTemperatureActive;
     }
 }

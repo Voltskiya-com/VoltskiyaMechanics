@@ -12,6 +12,7 @@ import com.voltskiya.mechanics.physical.player.PhysicalPlayerListener;
 import com.voltskiya.mechanics.physical.player.PhysicalPlayerManager;
 import com.voltskiya.mechanics.physical.stamina.StaminaConfig;
 import com.voltskiya.mechanics.physical.stamina.StaminaListener;
+import com.voltskiya.mechanics.physical.temperature.TemperatureCommand;
 import com.voltskiya.mechanics.physical.temperature.config.biome.TemperatureBiomeDB;
 import com.voltskiya.mechanics.physical.temperature.config.blocks.TemperatureBlocksConfig;
 import com.voltskiya.mechanics.physical.temperature.config.clothing.ClothingConfig;
@@ -77,6 +78,7 @@ public class PhysicalModule extends AbstractModule {
 
         new PhysicalPlayerListener();
 
+        new TemperatureCommand();
         new VarDailyTimerListener();
     }
 

@@ -20,6 +20,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 @CommandAlias("thirst")
+@CommandPermission("volt.thirst")
 public class ThirstCommand extends BaseCommand {
 
     public ThirstCommand() {
