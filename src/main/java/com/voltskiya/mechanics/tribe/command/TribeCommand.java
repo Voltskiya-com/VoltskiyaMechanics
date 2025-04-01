@@ -12,8 +12,8 @@ import com.voltskiya.lib.acf.annotation.Optional;
 import com.voltskiya.lib.acf.annotation.Single;
 import com.voltskiya.lib.acf.annotation.Subcommand;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
+import com.voltskiya.mechanics.tribe.entity.TribeApi;
 import com.voltskiya.mechanics.tribe.entity.member.DTribeMember;
-import com.voltskiya.mechanics.tribe.query.TribeStorage;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
@@ -22,7 +22,7 @@ import org.bukkit.entity.Player;
 
 @CommandAlias("tribe")
 @CommandPermission("volt.tribe")
-public class TribeCommand extends BaseCommand implements TribeCommandMembership, TribeCommandClaim, TribeCommandInfo {
+public class TribeCommand extends BaseCommand implements TribeCommandClaim, TribeCommandInfo, TribeCommandMembership {
 
     public TribeCommand() {
         PaperCommandManager cmd = VoltskiyaPlugin.get().getCommandManager();
@@ -35,7 +35,7 @@ public class TribeCommand extends BaseCommand implements TribeCommandMembership,
 
     private static Collection<String> getMembers(BukkitCommandCompletionContext c) {
         UUID uuid = c.getPlayer().getUniqueId();
-        DTribeMember member = TribeStorage.findPlayer(uuid);
+        DTribeMember member = TribeApi.findPlayer(uuid);
         if (member == null) return Collections.emptyList();
 
         return member.getTribe().getMembers()
@@ -46,7 +46,7 @@ public class TribeCommand extends BaseCommand implements TribeCommandMembership,
 
     private static Collection<String> getInvites(BukkitCommandCompletionContext c) {
         UUID uuid = c.getPlayer().getUniqueId();
-        DTribeMember member = TribeStorage.findPlayer(uuid);
+        DTribeMember member = TribeApi.findPlayer(uuid);
         if (member == null) return Collections.emptyList();
 
         return member.getTribe().getInvites()
@@ -55,7 +55,7 @@ public class TribeCommand extends BaseCommand implements TribeCommandMembership,
     }
 
     private static DTribeMember getMember(BukkitCommandExecutionContext ctx) {
-        return TribeStorage.findPlayer(ctx.getPlayer().getUniqueId());
+        return TribeApi.findPlayer(ctx.getPlayer().getUniqueId());
     }
 
 

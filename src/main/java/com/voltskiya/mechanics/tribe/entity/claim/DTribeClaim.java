@@ -3,12 +3,12 @@ package com.voltskiya.mechanics.tribe.entity.claim;
 
 import com.voltskiya.mechanics.database.BaseEntity;
 import com.voltskiya.mechanics.tribe.entity.DTribe;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;

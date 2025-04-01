@@ -1,6 +1,6 @@
 package com.voltskiya.mechanics.physical.player;
 
-import apple.utilities.database.SaveFileable;
+import apple.utilities.database.HasFilename;
 import com.voltskiya.mechanics.physical.stamina.Stamina;
 import com.voltskiya.mechanics.physical.temperature.Temperature;
 import com.voltskiya.mechanics.physical.thirst.Thirst;
@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import voltskiya.apple.utilities.minecraft.player.PlayerUtils;
 
-public class PhysicalPlayer implements SaveFileable {
+public class PhysicalPlayer implements HasFilename {
 
     private final transient ActionBarDisplay display = new ActionBarDisplay();
     protected Thirst thirst;

@@ -5,21 +5,19 @@ import com.voltskiya.mechanics.tribe.PlayerTeamJoinListener;
 import com.voltskiya.mechanics.tribe.entity.claim.DTribeClaimManager;
 import com.voltskiya.mechanics.tribe.entity.member.DTribeMember;
 import com.voltskiya.mechanics.tribe.entity.member.TribeRole;
-import com.voltskiya.mechanics.tribe.query.TribeStorage;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.regex.Pattern;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.title.Title;
@@ -43,8 +41,6 @@ public class DTribe extends BaseEntity {
     public static final Comparator<DTribeMember> MEMBER_COMPARATOR = Comparator.<DTribeMember>comparingInt(
             (member) -> member.getRole().getRank())
         .thenComparingLong((member) -> member.getJoined().toEpochMilli());
-    private static final Pattern TRIBE_NAME_REGEX = Pattern.compile("^.{3,40}$");
-    private static final Pattern TRIBE_TAG_REGEX = Pattern.compile("^[a-zA-Z]{3,5}$");
     @Id
     protected UUID id;
     @Column(unique = true)
@@ -55,33 +51,12 @@ public class DTribe extends BaseEntity {
     protected List<DTribeMember> members = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL)
     protected List<DTribeInvite> issuedInvites = new ArrayList<>();
-    @OneToOne(optional = false, cascade = CascadeType.ALL, mappedBy = "tribe")
+    @OneToOne(optional = false, cascade = CascadeType.ALL)
     protected DTribeClaimManager claims;
 
-    private DTribe(String name, String tag) {
+    public DTribe(String name, String tag) {
         this.name = name;
         this.tag = tag;
-        this.claims = new DTribeClaimManager(this);
-    }
-
-    public static DTribe createAndRegister(String name, Player leaderPlayer, String tag) {
-        if (TribeStorage.findTribe(name) != null) {
-            throw new IllegalArgumentException("There is already a tribe named %s".formatted(name));
-        }
-        if (TribeStorage.findTribeByTag(tag) != null) {
-            throw new IllegalArgumentException("There is already a tribe with tag %s".formatted(tag));
-        }
-        DTribe tribe = new DTribe(name, tag);
-        if (!TRIBE_NAME_REGEX.asMatchPredicate().test(name))
-            throw new IllegalArgumentException("%s must be between 3 and 40 characters long");
-        if (!TRIBE_TAG_REGEX.asMatchPredicate().test(tag))
-            throw new IllegalArgumentException("%s must be contain only alphabetic characters and be between 3 and 5 characters long");
-        DTribeMember leader = tribe.join(leaderPlayer);
-        tribe.save();
-        leader.setRole(TribeRole.LEADER);
-        leader.save();
-        tribe.getTeam().addPlayer(leaderPlayer);
-        return tribe;
     }
 
     @NotNull

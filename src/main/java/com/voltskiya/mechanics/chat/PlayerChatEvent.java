@@ -1,8 +1,8 @@
 package com.voltskiya.mechanics.chat;
 
 import com.voltskiya.mechanics.VoltskiyaPlugin;
+import com.voltskiya.mechanics.tribe.entity.TribeApi;
 import com.voltskiya.mechanics.tribe.entity.member.DTribeMember;
-import com.voltskiya.mechanics.tribe.query.TribeStorage;
 import dev.vankka.enhancedlegacytext.EnhancedLegacyText;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ public class PlayerChatEvent implements Listener {
 
         Component tribeTagComponent = null;
 
-        DTribeMember tribeMember = TribeStorage.findPlayer(player.getUniqueId());
+        DTribeMember tribeMember = TribeApi.findPlayer(player.getUniqueId());
         if (tribeMember != null) {
             tribeTagComponent = Component.text().append(Component.text(" [", NamedTextColor.DARK_GRAY),
                     Component.text(tribeMember.getTribe().getTag(), NamedTextColor.AQUA), Component.text("]",

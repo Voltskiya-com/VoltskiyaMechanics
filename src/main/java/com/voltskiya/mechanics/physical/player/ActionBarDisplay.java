@@ -126,7 +126,7 @@ public class ActionBarDisplay {
 
     @NotNull
     private StringBuilder calcArmorStr() {
-        AttributeInstance armorAttribute = player.getAttribute(Attribute.GENERIC_ARMOR);
+        AttributeInstance armorAttribute = player.getAttribute(Attribute.ARMOR);
         int armorValue = null == armorAttribute ? 0 : (int) armorAttribute.getValue();
         StringBuilder armorStr = new StringBuilder();
         for (char c : String.format("%02d", armorValue).toCharArray())

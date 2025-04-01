@@ -2,7 +2,7 @@ package com.voltskiya.mechanics.database;
 
 import io.ebean.Model;
 import io.ebean.annotation.DbName;
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.MappedSuperclass;
 
 @DbName(MechanicsDatabase.NAME)
 @MappedSuperclass

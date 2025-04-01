@@ -1,99 +1,68 @@
 plugins {
     id 'java'
-    id 'io.ebean' version '13.17.4'
-    id "io.github.patrick.remapper" version "1.4.0"
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'io.ebean' version '15.10.0'
+    id 'io.papermc.paperweight.userdev' version '2.0.0-beta.16'
+    id 'xyz.jpenilla.resource-factory-bukkit-convention' version '1.2.0'
+    id 'com.gradleup.shadow' version '9.0.0-beta11'
 }
 
 repositories {
     mavenLocal()
     mavenCentral()
-
-    maven { url 'https://papermc.io/repo/repository/maven-public/' }
-    maven { url 'https://repo.aikar.co/content/groups/aikar/' }
-
-    maven { url "https://reposilite.appleptr16.com/appleptr16" }
-    maven {
-        name 'CodeMC'
-        url 'https://repo.codemc.org/repository/maven-public/'
-    }
-    maven {
-        name 'sonatype'
-        url 'https://oss.sonatype.org/content/groups/public/'
-    }
-    maven { url "https://maven.enginehub.org/repo/" }
+    maven { url = 'https://reposilite.appleptr16.com/appleptr16' }
+    maven { url = 'https://repo.codemc.io/repository/maven-public/' }
+    maven { url = 'https://repo.aikar.co/content/groups/aikar/' }
+    maven { url = "https://maven.enginehub.org/repo/" }
 }
-
 
 java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(18))
-    }
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+}
+ebean {
+    debugLevel = 0
+}
+
+project.group = groupValue
+project.version = versionValue
+
+configurations.configureEach {
+    resolutionStrategy.cacheDynamicVersionsFor 1, 'seconds'
+    resolutionStrategy.cacheChangingModulesFor 1, 'seconds'
 }
 
 
-project.group groupValue
-project.version versionValue
-
-configurations {
-    configureEach {
-        resolutionStrategy.cacheDynamicVersionsFor 1, 'seconds'
-        resolutionStrategy.cacheChangingModulesFor 1, 'seconds'
-    }
-    testImplementation.extendsFrom compileOnly
-
-}
-
-project.ext.ebean_version = '13.17.4'
+project.ext.ebean_version = '15.10.0'
+// https://search.maven.org/search?q=g:io.ebean
 dependencies {
+    // Base server Paper and Spigot
+    paperweight.paperDevBundle('1.21.4-R0.1-SNAPSHOT')
     // sql
     annotationProcessor "io.ebean:ebean-querybean:${ebean_version}"
     annotationProcessor "io.ebean:querybean-generator:${ebean_version}"
     compileOnly "io.ebean:ebean-querybean:${ebean_version}"
-    compileOnly "io.ebean:ebean-sqlite:${ebean_version}"
-    // sql driver
+    compileOnly "io.ebean:ebean-api:${ebean_version}"
 
-    // migration
-    compileOnly "io.ebean:ebean-ddl-generator:${ebean_version}"
-    compileOnly 'io.ebean:ebean-migration:13.7.0'
-    compileOnly "org.glassfish.jaxb:jaxb-runtime:2.3.2"
-
-    //json
-    compileOnly "io.ebean:ebean-jackson-mapper:${ebean_version}"
-    compileOnly "io.ebean:ebean-jackson-jsonnode:${ebean_version}"
-    compileOnly 'com.fasterxml.jackson.core:jackson-annotations:2.14.2'
-    compileOnly 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
-
-    // voltskiya
-    compileOnly 'mc.pmc:voltpluginmanager:3.2-SNAPSHOT'
-    compileOnly 'mc.apple:AppleMCUtil:1.0-SNAPSHOT'
-    compileOnly 'voltskiya.lib:LoadDependencies:1.0-SNAPSHOT'
-    compileOnly 'voltskiya.utilities:VoltskiyaUtilities:2.0-SNAPSHOT'
-
-    // other plugins
-    compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.8-SNAPSHOT'
-
-    // minecraft
-    compileOnly 'io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT'
-    compileOnly 'org.spigotmc:spigot:1.20.4-R0.1-SNAPSHOT:remapped-mojang'
+    // Minecraft Libraries
+    compileOnly 'de.tr7zw:item-nbt-api-plugin:2.12.2'
+    compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.13-SNAPSHOT'
     compileOnly 'net.luckperms:api:5.4'
     implementation 'dev.vankka:enhancedlegacytext:1.0.0'
+
+    // appleptr16 Libraries
+    compileOnly 'mc.pmc:voltpluginmanager:3.2-SNAPSHOT'
+    compileOnly 'mc.apple:AppleMCUtil:1.0-SNAPSHOT'
+    compileOnly 'voltskiya.utilities:VoltskiyaUtilities:2.0-SNAPSHOT'
 }
 
-ebean {
-    debugLevel = 0 //0 - 9
+bukkitPluginYaml {
+    name.set 'VoltskiyaMechanics'
+    version.set versionValue
+    main.set 'com.voltskiya.mechanics.VoltskiyaPlugin'
+    apiVersion.set mcVersion
+    depend.addAll 'VoltPluginManager', 'AppleMCUtil', 'VoltskiyaUtilities', 'LuckPerms', 'WorldGuard'
+    authors.addAll 'appleptr16', 'ProfFeuerstein', 'KarmaLover'
 }
 
-remap {
-    dependsOn(shadowJar)
-    version.set '1.20.4'
-    doLast {
-        copy {
-            from shadowJar.getArchiveFile()
-            into file(serverBuildDir)
-        }
-    }
-}
 shadowJar {
     archiveClassifier.set ''
     manifest {
@@ -104,5 +73,10 @@ shadowJar {
     relocate 'io.ebeaninternal', 'com.voltskiya.io.ebean'
     relocate 'io.ebeanservice', 'com.voltskiya.io.ebean'
     outputs.upToDateWhen { false }
+    doLast {
+        copy {
+            from shadowJar.getArchiveFile()
+            into file(serverBuildDir)
+        }
+    }
 }
-

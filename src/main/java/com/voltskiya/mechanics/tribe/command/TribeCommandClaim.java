@@ -1,7 +1,7 @@
 package com.voltskiya.mechanics.tribe.command;
 
 import com.voltskiya.mechanics.tribe.entity.DTribe;
-import com.voltskiya.mechanics.tribe.entity.claim.ClaimStorage;
+import com.voltskiya.mechanics.tribe.entity.claim.ClaimApi;
 import com.voltskiya.mechanics.tribe.entity.claim.DTribeClaim;
 import com.voltskiya.mechanics.tribe.entity.claim.DTribeClaimManager;
 import com.voltskiya.mechanics.tribe.entity.member.DTribeMember;
@@ -27,7 +27,7 @@ public interface TribeCommandClaim extends TribeCommandUtil {
             red(player, "Claim limit reached!");
             return;
         }
-        DTribeClaim existingClaim = ClaimStorage.findClaim(player.getChunk().getChunkKey());
+        DTribeClaim existingClaim = ClaimApi.findClaim(player.getChunk().getChunkKey());
         if (existingClaim != null) {
             red(player, "This chunk has already been claimed by %s".formatted(existingClaim.getTribe().getName()));
             return;
@@ -57,7 +57,7 @@ public interface TribeCommandClaim extends TribeCommandUtil {
         if (checkClaimPerms(player, member)) return;
         if (chunkId == null) chunkId = player.getChunk().getChunkKey();
 
-        DTribeClaim claim = ClaimStorage.findClaim(chunkId);
+        DTribeClaim claim = ClaimApi.findClaim(chunkId);
         if (claim == null) {
             red(player, "Your tribe has not claimed this area");
             return;

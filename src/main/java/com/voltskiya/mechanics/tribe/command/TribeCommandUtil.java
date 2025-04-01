@@ -6,6 +6,11 @@ import org.bukkit.entity.Player;
 
 public interface TribeCommandUtil extends SendMessage {
 
+    static TribeCommandUtil get() {
+        return new TribeCommandUtil() {
+        };
+    }
+
     default void noTribeMessage(Player player) {
         red(player, "You are not in a tribe!");
     }

@@ -2,15 +2,15 @@ package com.voltskiya.mechanics.tribe.entity.claim;
 
 import com.voltskiya.mechanics.database.BaseEntity;
 import com.voltskiya.mechanics.tribe.entity.DTribe;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
 import org.bukkit.Chunk;
 
 @Entity
@@ -20,11 +20,11 @@ public class DTribeClaimManager extends BaseEntity {
     private static final int MAX_CLAIM_CHUNKS = 10;
     @Id
     protected UUID id;
-    @OneToOne(optional = false)
+    @OneToOne(optional = false, mappedBy = "claims")
     protected DTribe tribe;
     @OneToMany(cascade = CascadeType.ALL)
     protected List<DTribeClaim> chunks = new ArrayList<>();
-    private transient TribeClaimsWorldGuard worldGuard;
+    protected transient TribeClaimsWorldGuard worldGuard;
 
     public DTribeClaimManager(DTribe tribe) {
         this.tribe = tribe;

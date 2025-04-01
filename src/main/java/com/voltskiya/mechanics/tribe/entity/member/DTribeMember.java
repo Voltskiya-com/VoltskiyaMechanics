@@ -3,15 +3,14 @@ package com.voltskiya.mechanics.tribe.entity.member;
 import com.voltskiya.mechanics.database.BaseEntity;
 import com.voltskiya.mechanics.tribe.PlayerTeamJoinListener;
 import com.voltskiya.mechanics.tribe.entity.DTribe;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
@@ -22,7 +21,6 @@ public class DTribeMember extends BaseEntity {
     @Id
     public UUID player;
     @Column
-    @Enumerated
     public TribeRole role;
     @Column
     private Timestamp joined;

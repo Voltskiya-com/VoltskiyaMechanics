@@ -1,7 +1,7 @@
 package com.voltskiya.mechanics.tribe;
 
 import com.voltskiya.mechanics.VoltskiyaPlugin;
-import com.voltskiya.mechanics.tribe.query.TribeStorage;
+import com.voltskiya.mechanics.tribe.entity.TribeApi;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -41,7 +41,7 @@ public class PlayerTeamJoinListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (TribeStorage.findPlayer(player.getUniqueId()) == null)
+        if (TribeApi.findPlayer(player.getUniqueId()) == null)
             joinPlayer(player);
     }
 }

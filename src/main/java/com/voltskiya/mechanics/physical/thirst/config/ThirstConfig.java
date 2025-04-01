@@ -38,7 +38,7 @@ public class ThirstConfig extends AppleConfigInit {
         thirstEffects.add(new ThirstEffect(PotionEffectType.HUNGER, 0, 0, 200));
         thirstEffects.add(new ThirstEffect(PotionEffectType.WITHER, 0, 0, 0));
         dirtyWaterEffects.add(new DirtyWaterPotionEffect(PotionEffectType.POISON, 0, 100));
-        dirtyWaterEffects.add(new DirtyWaterPotionEffect(PotionEffectType.CONFUSION, 0, 160));
+        dirtyWaterEffects.add(new DirtyWaterPotionEffect(PotionEffectType.NAUSEA, 0, 160));
         for (ThirstItem item : ThirstItem.values()) {
             keyedConsumables.put(item.getId(), new ExactThirstConfig());
         }

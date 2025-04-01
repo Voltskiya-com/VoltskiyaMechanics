@@ -10,7 +10,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
 public class ThirstRecipes {
@@ -45,8 +44,7 @@ public class ThirstRecipes {
     public static ItemStack waterBottleItem() {
         ItemStack bottle = new ItemStack(Material.POTION);
         PotionMeta meta = (PotionMeta) bottle.getItemMeta();
-        PotionData data = new PotionData(PotionType.WATER);
-        meta.setBasePotionData(data);
+        meta.setBasePotionType(PotionType.WATER);
         bottle.setItemMeta(meta);
         return bottle;
     }

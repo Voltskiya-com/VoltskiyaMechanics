@@ -10,10 +10,10 @@ import com.voltskiya.lib.database.config.VoltskiyaMysqlConfig;
 import com.voltskiya.mechanics.VoltskiyaPlugin;
 import com.voltskiya.mechanics.tribe.entity.DTribe;
 import com.voltskiya.mechanics.tribe.entity.DTribeInvite;
+import com.voltskiya.mechanics.tribe.entity.TribeApi;
 import com.voltskiya.mechanics.tribe.entity.claim.DTribeClaim;
 import com.voltskiya.mechanics.tribe.entity.claim.DTribeClaimManager;
 import com.voltskiya.mechanics.tribe.entity.member.DTribeMember;
-import com.voltskiya.mechanics.tribe.query.TribeStorage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,24 +32,6 @@ public class MechanicsDatabase extends VoltskiyaDatabase {
     }
 
     @Override
-    protected List<Class<?>> getQueryBeans() {
-        return new ArrayList<>(List.of(TribeStorage.class));
-    }
-
-    @Override
-    protected void addEntities(List<Class<?>> entities) {
-        entities.add(BaseEntity.class);
-        entities.addAll(List.of(DTribe.class, DTribeMember.class, DTribeInvite.class));
-        entities.addAll(List.of(DTribeClaimManager.class, DTribeClaim.class));
-    }
-
-    @Override
-    protected VoltskiyaDatabaseConfig getConfig() {
-        File file = new File(VoltskiyaPlugin.get().getDataFolder(), "DatabaseConfig.json");
-        return makeConfig(file, VoltskiyaMysqlConfig.class);
-    }
-
-    @Override
     protected Object getObjectMapper() {
         SimpleModule namespacedKeyModule = new SimpleModule();
         return new ObjectMapper()
@@ -60,6 +42,24 @@ public class MechanicsDatabase extends VoltskiyaDatabase {
                 .withSetterVisibility(Visibility.NONE)
                 .withCreatorVisibility(Visibility.NONE)
                 .withIsGetterVisibility(Visibility.NONE));
+    }
+
+    @Override
+    protected void addEntities(List<Class<?>> entities) {
+        entities.add(BaseEntity.class);
+        entities.addAll(List.of(DTribe.class, DTribeMember.class, DTribeInvite.class));
+        entities.addAll(List.of(DTribeClaimManager.class, DTribeClaim.class));
+    }
+
+    @Override
+    protected List<Class<?>> getQueryBeans() {
+        return new ArrayList<>(List.of(TribeApi.class));
+    }
+
+    @Override
+    protected VoltskiyaDatabaseConfig getConfig() {
+        File file = new File(VoltskiyaPlugin.get().getDataFolder(), "DatabaseConfig.json");
+        return makeConfig(file, VoltskiyaMysqlConfig.class);
     }
 
     @Override
